@@ -1,11 +1,62 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import reactLogo from './assets/react.svg'
 import viteLogo from './assets/vite.svg'
 import heroImg from './assets/hero.png'
+import { supabase } from './supabaseClient'
+import Login from './Login'
 import './App.css'
 
 function App() {
   const [count, setCount] = useState(0)
+  const [empreendimentos, setEmpreendimentos] = useState([])
+  const [supabaseError, setSupabaseError] = useState(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const [session, setSession] = useState(null)
+  const [isCheckingSession, setIsCheckingSession] = useState(true)
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session)
+      setIsCheckingSession(false)
+    })
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session)
+    })
+
+    return () => subscription.unsubscribe()
+  }, [])
+
+  useEffect(() => {
+    if (!session) return
+
+    async function fetchEmpreendimentos() {
+      setIsLoading(true)
+      const { data, error } = await supabase.from('empreendimentos').select('*')
+      if (error) {
+        setSupabaseError(error.message)
+      } else {
+        setEmpreendimentos(data)
+      }
+      setIsLoading(false)
+    }
+
+    fetchEmpreendimentos()
+  }, [session])
+
+  async function handleLogout() {
+    await supabase.auth.signOut()
+  }
+
+  if (isCheckingSession) {
+    return <p>Carregando...</p>
+  }
+
+  if (!session) {
+    return <Login />
+  }
 
   return (
     <>
@@ -20,6 +71,27 @@ function App() {
           <p>
             Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
           </p>
+        </div>
+        <div>
+          <h2>Teste de conexão com Supabase</h2>
+          <p>
+            Logado como {session.user.email}{' '}
+            <button type="button" onClick={handleLogout}>
+              Sair
+            </button>
+          </p>
+          {isLoading && <p>Carregando...</p>}
+          {!isLoading && supabaseError && (
+            <p style={{ color: 'red' }}>Erro: {supabaseError}</p>
+          )}
+          {!isLoading && !supabaseError && empreendimentos.length === 0 && (
+            <p>Nenhum dado encontrado (é esperado, pois ainda não há login).</p>
+          )}
+          <ul>
+            {empreendimentos.map((item) => (
+              <li key={item.id}>{item.nome}</li>
+            ))}
+          </ul>
         </div>
         <button
           type="button"
