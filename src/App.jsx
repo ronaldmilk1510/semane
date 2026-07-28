@@ -4,6 +4,7 @@ import viteLogo from './assets/vite.svg'
 import heroImg from './assets/hero.png'
 import { supabase } from './supabaseClient'
 import Login from './Login'
+import RelatorioDisponibilidade from './RelatorioDisponibilidade'
 import './App.css'
 
 function App() {
@@ -13,6 +14,7 @@ function App() {
   const [isLoading, setIsLoading] = useState(true)
   const [session, setSession] = useState(null)
   const [isCheckingSession, setIsCheckingSession] = useState(true)
+  const [mostrarRelatorio, setMostrarRelatorio] = useState(false)
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -58,6 +60,17 @@ function App() {
     return <Login />
   }
 
+  if (mostrarRelatorio) {
+    return (
+      <>
+        <button type="button" onClick={() => setMostrarRelatorio(false)}>
+          Voltar
+        </button>
+        <RelatorioDisponibilidade />
+      </>
+    )
+  }
+
   return (
     <>
       <section id="center">
@@ -76,6 +89,9 @@ function App() {
           <h2>Teste de conexão com Supabase</h2>
           <p>
             Logado como {session.user.email}{' '}
+            <button type="button" onClick={() => setMostrarRelatorio(true)}>
+              Ver relatório de disponibilidade
+            </button>{' '}
             <button type="button" onClick={handleLogout}>
               Sair
             </button>
