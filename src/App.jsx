@@ -5,6 +5,7 @@ import heroImg from './assets/hero.png'
 import { supabase } from './supabaseClient'
 import Login from './Login'
 import RelatorioDisponibilidade from './RelatorioDisponibilidade'
+import RelatorioLocacoes from './RelatorioLocacoes'
 import './App.css'
 
 function App() {
@@ -15,6 +16,7 @@ function App() {
   const [session, setSession] = useState(null)
   const [isCheckingSession, setIsCheckingSession] = useState(true)
   const [mostrarRelatorio, setMostrarRelatorio] = useState(false)
+  const [mostrarRelatorioLocacoes, setMostrarRelatorioLocacoes] = useState(false)
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -71,6 +73,17 @@ function App() {
     )
   }
 
+  if (mostrarRelatorioLocacoes) {
+    return (
+      <>
+        <button type="button" onClick={() => setMostrarRelatorioLocacoes(false)}>
+          Voltar
+        </button>
+        <RelatorioLocacoes />
+      </>
+    )
+  }
+
   return (
     <>
       <section id="center">
@@ -91,6 +104,9 @@ function App() {
             Logado como {session.user.email}{' '}
             <button type="button" onClick={() => setMostrarRelatorio(true)}>
               Ver relatório de disponibilidade
+            </button>{' '}
+            <button type="button" onClick={() => setMostrarRelatorioLocacoes(true)}>
+              Ver relatório de locações
             </button>{' '}
             <button type="button" onClick={handleLogout}>
               Sair
