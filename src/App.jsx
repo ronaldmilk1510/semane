@@ -6,6 +6,7 @@ import { supabase } from './supabaseClient'
 import Login from './Login'
 import RelatorioDisponibilidade from './RelatorioDisponibilidade'
 import RelatorioLocacoes from './RelatorioLocacoes'
+import RelatorioCaixa from './RelatorioCaixa'
 import './App.css'
 
 function App() {
@@ -17,6 +18,7 @@ function App() {
   const [isCheckingSession, setIsCheckingSession] = useState(true)
   const [mostrarRelatorio, setMostrarRelatorio] = useState(false)
   const [mostrarRelatorioLocacoes, setMostrarRelatorioLocacoes] = useState(false)
+  const [mostrarRelatorioCaixa, setMostrarRelatorioCaixa] = useState(false)
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -84,6 +86,17 @@ function App() {
     )
   }
 
+  if (mostrarRelatorioCaixa) {
+    return (
+      <>
+        <button type="button" onClick={() => setMostrarRelatorioCaixa(false)}>
+          Voltar
+        </button>
+        <RelatorioCaixa />
+      </>
+    )
+  }
+
   return (
     <>
       <section id="center">
@@ -107,6 +120,9 @@ function App() {
             </button>{' '}
             <button type="button" onClick={() => setMostrarRelatorioLocacoes(true)}>
               Ver relatório de locações
+            </button>{' '}
+            <button type="button" onClick={() => setMostrarRelatorioCaixa(true)}>
+              Ver relatório de resultado de caixa
             </button>{' '}
             <button type="button" onClick={handleLogout}>
               Sair
