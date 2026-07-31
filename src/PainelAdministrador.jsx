@@ -1,5 +1,9 @@
 import { useState } from 'react';
 import CadastroEmpreendimentos from './CadastroEmpreendimentos';
+import CadastroBlocos from './CadastroBlocos';
+import CadastroUnidades from './CadastroUnidades';
+import CadastroTemporadas from './CadastroTemporadas';
+import CadastroProprietarios from './CadastroProprietarios';
 import RelatorioDisponibilidade from './RelatorioDisponibilidade';
 import RelatorioLocacoes from './RelatorioLocacoes';
 import RelatorioCaixa from './RelatorioCaixa';
@@ -11,6 +15,10 @@ const grupos = [
     titulo: 'Cadastros',
     itens: [
       { id: 'empreendimentos', titulo: 'Empreendimentos', Componente: CadastroEmpreendimentos },
+      { id: 'blocos', titulo: 'Blocos', Componente: CadastroBlocos },
+      { id: 'unidades', titulo: 'Unidades', Componente: CadastroUnidades },
+      { id: 'temporadas', titulo: 'Temporadas', Componente: CadastroTemporadas },
+      { id: 'proprietarios', titulo: 'Proprietários', Componente: CadastroProprietarios },
     ],
   },
   {
