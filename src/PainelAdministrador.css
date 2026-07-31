@@ -1,0 +1,321 @@
+.painel-administrador {
+  --pa-bg: #f4f6f5;
+  --pa-bg-elevado: #ffffff;
+  --pa-texto: #202b2e;
+  --pa-principal: #1f5c63;
+  --pa-principal-bg: rgba(31, 92, 99, 0.08);
+  --pa-aviso: #c1502e;
+  --pa-linha-alt: #edefee;
+  --pa-borda: #dde2e1;
+
+  font-family: 'Inter', system-ui, 'Segoe UI', Roboto, sans-serif;
+  color: var(--pa-texto);
+  background: var(--pa-bg);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+}
+
+.painel-administrador h1,
+.painel-administrador h2,
+.painel-administrador h3 {
+  font-weight: 600;
+  color: var(--pa-texto);
+}
+
+.painel-administrador button {
+  font-family: inherit;
+}
+
+.pa-topbar {
+  display: none;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  background: var(--pa-bg-elevado);
+  border-bottom: 1px solid var(--pa-borda);
+}
+
+.pa-topbar-titulo {
+  font-weight: 600;
+}
+
+.pa-botao-menu {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+.pa-botao-menu span {
+  display: block;
+  height: 2px;
+  background: var(--pa-texto);
+  border-radius: 2px;
+}
+
+.pa-layout {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+
+.pa-sidebar {
+  width: 260px;
+  flex-shrink: 0;
+  background: var(--pa-bg-elevado);
+  border-right: 1px solid var(--pa-borda);
+  padding: 1.25rem 0.75rem;
+  box-sizing: border-box;
+  overflow-y: auto;
+}
+
+.pa-sidebar-usuario {
+  padding: 0 0.5rem 1rem;
+  margin-bottom: 0.75rem;
+  border-bottom: 1px solid var(--pa-borda);
+  font-size: 0.85rem;
+}
+
+.pa-sidebar-usuario p {
+  margin: 0 0 0.5rem;
+  word-break: break-all;
+}
+
+.pa-grupo {
+  margin-bottom: 1rem;
+}
+
+.pa-grupo-titulo {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--pa-texto);
+  opacity: 0.6;
+  margin: 0 0 0.4rem;
+  padding: 0 0.5rem;
+}
+
+.pa-grupo-itens {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.pa-item-link {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 0.5rem;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--pa-texto);
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+
+.pa-item-link:hover {
+  background: var(--pa-principal-bg);
+}
+
+.pa-item-link.pa-item-ativo {
+  background: var(--pa-principal);
+  color: #fff;
+  font-weight: 600;
+}
+
+.pa-backdrop {
+  display: none;
+}
+
+.pa-conteudo {
+  flex: 1;
+  min-width: 0;
+  padding: 1.5rem 2rem;
+  box-sizing: border-box;
+}
+
+.pa-breadcrumb {
+  font-size: 0.9rem;
+  color: var(--pa-texto);
+  opacity: 0.65;
+  margin: 0 0 1rem;
+}
+
+@media (max-width: 900px) {
+  .pa-topbar {
+    display: flex;
+  }
+
+  .pa-layout {
+    position: relative;
+  }
+
+  .pa-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    z-index: 20;
+    transform: translateX(-100%);
+    transition: transform 0.2s ease;
+    box-shadow: 4px 0 16px rgba(0, 0, 0, 0.15);
+  }
+
+  .painel-administrador.pa-menu-aberto .pa-sidebar {
+    transform: translateX(0);
+  }
+
+  .painel-administrador.pa-menu-aberto .pa-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+    z-index: 10;
+  }
+
+  .pa-conteudo {
+    padding: 1.25rem;
+  }
+}
+
+/* Botões */
+
+.pa-botao {
+  font-family: inherit;
+  font-size: 0.95rem;
+  padding: 0.55rem 1rem;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  background: var(--pa-principal);
+  color: #fff;
+}
+
+.pa-botao:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.pa-botao-secundario {
+  background: transparent;
+  color: var(--pa-texto);
+  border: 1px solid var(--pa-borda);
+}
+
+.pa-botao-perigo {
+  background: var(--pa-aviso);
+  color: #fff;
+}
+
+.pa-botao-texto {
+  background: transparent;
+  color: var(--pa-principal);
+  border: none;
+  padding: 0.3rem 0.5rem;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.pa-botao-texto.pa-botao-texto-aviso {
+  color: var(--pa-aviso);
+}
+
+/* Tabela */
+
+.pa-tabela {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--pa-bg-elevado);
+}
+
+.pa-tabela th {
+  text-align: left;
+  padding: 0.6rem 0.75rem;
+  border-bottom: 2px solid var(--pa-borda);
+  font-size: 0.85rem;
+}
+
+.pa-tabela td {
+  padding: 0.6rem 0.75rem;
+  font-size: 0.95rem;
+}
+
+.pa-tabela tbody tr:nth-child(even) {
+  background: var(--pa-linha-alt);
+}
+
+.pa-lista-vazia {
+  color: var(--pa-texto);
+  opacity: 0.7;
+  margin-top: 1rem;
+}
+
+.pa-erro {
+  color: var(--pa-aviso);
+  margin-top: 0.75rem;
+}
+
+/* Modal */
+
+.pa-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 30;
+  padding: 1rem;
+  box-sizing: border-box;
+}
+
+.pa-modal {
+  background: var(--pa-bg-elevado);
+  border-radius: 8px;
+  padding: 1.5rem;
+  width: 100%;
+  max-width: 420px;
+  box-sizing: border-box;
+}
+
+.pa-modal h3 {
+  margin-top: 0;
+}
+
+.pa-modal label {
+  display: block;
+  font-size: 0.9rem;
+  margin-bottom: 1rem;
+}
+
+.pa-modal input[type='text'] {
+  display: block;
+  width: 100%;
+  margin-top: 0.35rem;
+  padding: 0.5rem;
+  border: 1px solid var(--pa-borda);
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 1rem;
+  box-sizing: border-box;
+}
+
+.pa-modal-acoes {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.6rem;
+  margin-top: 1.25rem;
+}
