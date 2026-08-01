@@ -4,6 +4,7 @@ import CadastroBlocos from './CadastroBlocos';
 import CadastroUnidades from './CadastroUnidades';
 import CadastroTemporadas from './CadastroTemporadas';
 import CadastroProprietarios from './CadastroProprietarios';
+import CadastroCotas from './CadastroCotas';
 import RelatorioDisponibilidade from './RelatorioDisponibilidade';
 import RelatorioLocacoes from './RelatorioLocacoes';
 import RelatorioCaixa from './RelatorioCaixa';
@@ -19,6 +20,7 @@ const grupos = [
       { id: 'unidades', titulo: 'Unidades', Componente: CadastroUnidades },
       { id: 'temporadas', titulo: 'Temporadas', Componente: CadastroTemporadas },
       { id: 'proprietarios', titulo: 'Proprietários', Componente: CadastroProprietarios },
+      { id: 'cotas', titulo: 'Cotas', Componente: CadastroCotas },
     ],
   },
   {

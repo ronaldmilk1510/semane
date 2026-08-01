@@ -289,6 +289,8 @@
   padding: 1.5rem;
   width: 100%;
   max-width: 420px;
+  max-height: 90vh;
+  overflow-y: auto;
   box-sizing: border-box;
 }
 
@@ -321,4 +323,50 @@
   justify-content: flex-end;
   gap: 0.6rem;
   margin-top: 1.25rem;
+}
+
+/* Titulares (lista dinâmica dentro do modal de Cotas) */
+
+.pa-titulares-lista {
+  margin-top: 0.5rem;
+}
+
+.pa-titulares-titulo {
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--pa-texto);
+  opacity: 0.6;
+  margin: 0 0 0.6rem;
+}
+
+.pa-titular-linha {
+  border: 1px solid var(--pa-borda);
+  border-radius: 6px;
+  padding: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.pa-titular-linha label {
+  margin-bottom: 0.6rem;
+}
+
+.pa-titular-checkbox {
+  display: flex !important;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.pa-titular-checkbox input[type='checkbox'] {
+  width: auto;
+  margin: 0;
+}
+
+.pa-titular-apoio {
+  font-size: 0.8rem;
+  color: var(--pa-texto);
+  opacity: 0.6;
+  margin: 0.35rem 0 0.6rem;
 }
