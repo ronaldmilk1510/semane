@@ -77,7 +77,7 @@ export default function CadastroCotas() {
   function abrirAdicionar() {
     setModoEdicaoId(null);
     setUnidadeIdForm('');
-    setTitularesForm([novoTitular()]);
+    setTitularesForm([{ ...novoTitular(), principal: true }]);
     setTitularesOriginaisIds([]);
     setErroForm('');
     setModalAberto(true);
@@ -86,12 +86,15 @@ export default function CadastroCotas() {
   function abrirEditar(item) {
     setModoEdicaoId(item.id);
     setUnidadeIdForm(item.unidade_id);
-    const titulares = item.titulares_cota.map((titular) => ({
+    let titulares = item.titulares_cota.map((titular) => ({
       chave: crypto.randomUUID(),
       existingId: titular.id,
       proprietarioId: titular.proprietario_id,
       principal: !!titular.e_titular_principal,
     }));
+    if (titulares.length === 1) {
+      titulares = [{ ...titulares[0], principal: true }];
+    }
     setTitularesForm(titulares);
     setTitularesOriginaisIds(item.titulares_cota.map((titular) => titular.id));
     setErroForm('');
@@ -103,11 +106,23 @@ export default function CadastroCotas() {
   }
 
   function adicionarTitular() {
-    setTitularesForm((atual) => [...atual, novoTitular()]);
+    setTitularesForm((atual) => {
+      const novaLista = [...atual, novoTitular()];
+      if (novaLista.length === 1) {
+        return [{ ...novaLista[0], principal: true }];
+      }
+      return novaLista;
+    });
   }
 
   function removerTitular(chave) {
-    setTitularesForm((atual) => atual.filter((titular) => titular.chave !== chave));
+    setTitularesForm((atual) => {
+      const restante = atual.filter((titular) => titular.chave !== chave);
+      if (restante.length === 1) {
+        return [{ ...restante[0], principal: true }];
+      }
+      return restante;
+    });
   }
 
   function atualizarTitular(chave, campo, valor) {
@@ -132,6 +147,17 @@ export default function CadastroCotas() {
     if (titularesForm.some((titular) => !titular.proprietarioId)) {
       setErroForm('Selecione o proprietário em todos os titulares.');
       return;
+    }
+    if (titularesForm.length >= 2) {
+      const totalPrincipais = titularesForm.filter((titular) => titular.principal).length;
+      if (totalPrincipais === 0) {
+        setErroForm('Marque um titular como responsável principal antes de salvar.');
+        return;
+      }
+      if (totalPrincipais > 1) {
+        setErroForm('Marque apenas um titular como responsável principal.');
+        return;
+      }
     }
 
     setSalvando(true);
@@ -348,11 +374,16 @@ export default function CadastroCotas() {
                       <input
                         type="checkbox"
                         checked={titular.principal}
+                        disabled={titularesForm.length === 1}
                         onChange={(event) => atualizarTitular(titular.chave, 'principal', event.target.checked)}
                       />
                       Definir como responsável principal
                     </label>
-                    <p className="pa-titular-apoio">Registro para uso futuro, sem efeito no sistema hoje.</p>
+                    <p className="pa-titular-apoio">
+                      {titularesForm.length === 1
+                        ? 'Responsável principal automático: a cota tem apenas um titular.'
+                        : 'Marque exatamente um titular como responsável principal.'}
+                    </p>
                     <button
                       type="button"
                       className="pa-botao-texto pa-botao-texto-aviso"
