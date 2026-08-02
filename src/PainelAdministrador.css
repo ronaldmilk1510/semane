@@ -370,3 +370,62 @@
   opacity: 0.6;
   margin: 0.35rem 0 0.6rem;
 }
+
+/* Editor de página cheia (grade de Prioridades do Ano) */
+
+.pa-editor-cabecalho {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+}
+
+.pa-editor-campos {
+  display: flex;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+
+.pa-editor-campos label {
+  display: block;
+  font-size: 0.9rem;
+}
+
+.pa-editor-valor-fixo {
+  display: block;
+  margin-top: 0.35rem;
+  padding: 0.5rem 0;
+  font-weight: 600;
+}
+
+.pa-campo {
+  display: block;
+  margin-top: 0.35rem;
+  padding: 0.5rem;
+  border: 1px solid var(--pa-borda);
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 1rem;
+  box-sizing: border-box;
+  background: var(--pa-bg-elevado);
+  color: var(--pa-texto);
+}
+
+.pa-linhas-acoes {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin: 1rem 0;
+}
+
+.pa-linhas-tabela td {
+  vertical-align: middle;
+}
+
+.pa-linhas-tabela .pa-campo {
+  margin-top: 0;
+  min-width: 130px;
+}
