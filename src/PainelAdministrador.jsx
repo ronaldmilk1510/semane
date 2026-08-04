@@ -7,6 +7,7 @@ import CadastroProprietarios from './CadastroProprietarios';
 import CadastroCotas from './CadastroCotas';
 import CadastroPrioridadesAno from './CadastroPrioridadesAno';
 import CadastroModeloDatasPadrao from './CadastroModeloDatasPadrao';
+import CadastroSemanas from './CadastroSemanas';
 import RelatorioDisponibilidade from './RelatorioDisponibilidade';
 import RelatorioLocacoes from './RelatorioLocacoes';
 import RelatorioCaixa from './RelatorioCaixa';
@@ -31,6 +32,7 @@ const grupos = [
     itens: [
       { id: 'prioridades-ano', titulo: 'Prioridades do Ano', Componente: CadastroPrioridadesAno },
       { id: 'modelo-datas-padrao', titulo: 'Modelo de Datas Padrão', Componente: CadastroModeloDatasPadrao },
+      { id: 'semanas', titulo: 'Semanas', Componente: CadastroSemanas },
     ],
   },
   {
