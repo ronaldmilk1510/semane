@@ -254,6 +254,9 @@ export default function CadastroPrioridadesAno() {
       if (!linha.numeroPrioridade.toString().trim() || Number.isNaN(numero) || !Number.isInteger(numero)) {
         return `Informe um número de prioridade válido na linha ${i + 1}.`;
       }
+      if (!linha.dataAbertura) {
+        return `Informe a data de abertura na linha ${i + 1}. Ela é obrigatória e precisa ser preenchida manualmente quando não há sugestão automática disponível para esse número de prioridade.`;
+      }
     }
 
     const blocosVistos = new Map();
