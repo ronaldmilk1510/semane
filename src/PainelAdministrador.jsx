@@ -9,6 +9,8 @@ import CadastroPrioridadesAno from './CadastroPrioridadesAno';
 import CadastroModeloDatasPadrao from './CadastroModeloDatasPadrao';
 import CadastroSemanas from './CadastroSemanas';
 import CadastroCorretores from './CadastroCorretores';
+import CadastroResponsaveisGrupo from './CadastroResponsaveisGrupo';
+import CadastroReservas from './CadastroReservas';
 import RelatorioDisponibilidade from './RelatorioDisponibilidade';
 import RelatorioLocacoes from './RelatorioLocacoes';
 import RelatorioCaixa from './RelatorioCaixa';
@@ -41,6 +43,8 @@ const grupos = [
     titulo: 'Locações e Pagamentos',
     itens: [
       { id: 'corretores', titulo: 'Corretores', Componente: CadastroCorretores },
+      { id: 'responsaveis-grupo', titulo: 'Responsáveis do grupo', Componente: CadastroResponsaveisGrupo },
+      { id: 'reservas', titulo: 'Reservas', Componente: CadastroReservas },
     ],
   },
   {
