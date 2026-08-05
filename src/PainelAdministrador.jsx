@@ -11,6 +11,7 @@ import CadastroSemanas from './CadastroSemanas';
 import CadastroCorretores from './CadastroCorretores';
 import CadastroResponsaveisGrupo from './CadastroResponsaveisGrupo';
 import CadastroReservas from './CadastroReservas';
+import CadastroOcupacoes from './CadastroOcupacoes';
 import RelatorioDisponibilidade from './RelatorioDisponibilidade';
 import RelatorioLocacoes from './RelatorioLocacoes';
 import RelatorioCaixa from './RelatorioCaixa';
@@ -45,6 +46,7 @@ const grupos = [
       { id: 'corretores', titulo: 'Corretores', Componente: CadastroCorretores },
       { id: 'responsaveis-grupo', titulo: 'Responsáveis do grupo', Componente: CadastroResponsaveisGrupo },
       { id: 'reservas', titulo: 'Reservas', Componente: CadastroReservas },
+      { id: 'ocupacoes', titulo: 'Ocupações', Componente: CadastroOcupacoes },
     ],
   },
   {
@@ -87,7 +89,7 @@ export default function PainelAdministrador({ session, onLogout }) {
           <span></span>
           <span></span>
         </button>
-        <span className="pa-topbar-titulo">Multiprop</span>
+        <span className="pa-topbar-titulo">SEMANE</span>
       </div>
 
       <div className="pa-layout">
