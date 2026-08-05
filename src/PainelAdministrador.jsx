@@ -12,6 +12,7 @@ import CadastroCorretores from './CadastroCorretores';
 import CadastroResponsaveisGrupo from './CadastroResponsaveisGrupo';
 import CadastroReservas from './CadastroReservas';
 import CadastroOcupacoes from './CadastroOcupacoes';
+import CadastroPagamentos from './CadastroPagamentos';
 import RelatorioDisponibilidade from './RelatorioDisponibilidade';
 import RelatorioLocacoes from './RelatorioLocacoes';
 import RelatorioCaixa from './RelatorioCaixa';
@@ -47,6 +48,7 @@ const grupos = [
       { id: 'responsaveis-grupo', titulo: 'Responsáveis do grupo', Componente: CadastroResponsaveisGrupo },
       { id: 'reservas', titulo: 'Reservas', Componente: CadastroReservas },
       { id: 'ocupacoes', titulo: 'Ocupações', Componente: CadastroOcupacoes },
+      { id: 'pagamentos', titulo: 'Pagamentos', Componente: CadastroPagamentos },
     ],
   },
   {
