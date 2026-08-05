@@ -1,13 +1,23 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from './supabaseClient';
 
 export default function RelatorioCaixa() {
+  const [empreendimentos, setEmpreendimentos] = useState([]);
+  const [empreendimentoId, setEmpreendimentoId] = useState('');
   const [dataInicio, setDataInicio] = useState('');
   const [dataFim, setDataFim] = useState('');
   const [visao, setVisao] = useState('cota');
   const [resultado, setResultado] = useState(null);
   const [carregando, setCarregando] = useState(false);
   const [erro, setErro] = useState('');
+
+  useEffect(() => {
+    async function carregarEmpreendimentos() {
+      const { data } = await supabase.from('empreendimentos').select('id, nome');
+      if (data) setEmpreendimentos(data);
+    }
+    carregarEmpreendimentos();
+  }, []);
 
   async function consultar() {
     setCarregando(true);
@@ -22,6 +32,7 @@ export default function RelatorioCaixa() {
     const { data, error } = await supabase.rpc(nomeFuncao, {
       p_data_inicio: dataInicio || null,
       p_data_fim: dataFim || null,
+      p_empreendimento_id: empreendimentoId || null,
     });
 
     setCarregando(false);
@@ -57,6 +68,17 @@ export default function RelatorioCaixa() {
 
       <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', marginBottom: '1rem' }}>
         <label>
+          Empreendimento (opcional)
+          <br />
+          <select value={empreendimentoId} onChange={(e) => setEmpreendimentoId(e.target.value)}>
+            <option value="">Todos</option>
+            {empreendimentos.map((emp) => (
+              <option key={emp.id} value={emp.id}>{emp.nome}</option>
+            ))}
+          </select>
+        </label>
+
+        <label>
           Período de
           <br />
           <input type="date" value={dataInicio} onChange={(e) => setDataInicio(e.target.value)} />
@@ -83,6 +105,7 @@ export default function RelatorioCaixa() {
         <table style={{ marginTop: '1.5rem', borderCollapse: 'collapse', width: '100%' }}>
           <thead>
             <tr>
+              <th style={{ textAlign: 'left', borderBottom: '1px solid #ccc' }}>Empreendimento</th>
               <th style={{ textAlign: 'left', borderBottom: '1px solid #ccc' }}>Unidade</th>
               <th style={{ textAlign: 'left', borderBottom: '1px solid #ccc' }}>Titulares</th>
               <th style={{ textAlign: 'left', borderBottom: '1px solid #ccc' }}>Entradas</th>
@@ -94,6 +117,7 @@ export default function RelatorioCaixa() {
           <tbody>
             {resultado.map((linha) => (
               <tr key={linha.cota_id}>
+                <td style={{ padding: '4px 8px' }}>{linha.empreendimento_nome}</td>
                 <td style={{ padding: '4px 8px' }}>{linha.unidade_identificacao}</td>
                 <td style={{ padding: '4px 8px' }}>{linha.cota_titulares}</td>
                 <td style={{ padding: '4px 8px' }}>R$ {linha.entradas}</td>

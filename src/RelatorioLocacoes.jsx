@@ -7,8 +7,10 @@ function formatarData(data) {
 }
 
 export default function RelatorioLocacoes() {
-  const [unidades, setUnidades] = useState([]);
+  const [todasUnidades, setTodasUnidades] = useState([]);
+  const [empreendimentos, setEmpreendimentos] = useState([]);
   const [corretores, setCorretores] = useState([]);
+  const [empreendimentoId, setEmpreendimentoId] = useState('');
   const [unidadeId, setUnidadeId] = useState('');
   const [corretorId, setCorretorId] = useState('');
   const [dataInicio, setDataInicio] = useState('');
@@ -20,14 +22,31 @@ export default function RelatorioLocacoes() {
 
   useEffect(() => {
     async function carregarFiltros() {
-      const { data: unidadesData } = await supabase.from('unidades').select('id, identificacao');
-      if (unidadesData) setUnidades(unidadesData);
+      const { data: unidadesData } = await supabase
+        .from('unidades')
+        .select('id, identificacao, blocos ( empreendimento_id, empreendimentos ( nome ) )');
+      if (unidadesData) setTodasUnidades(unidadesData);
+
+      const { data: empreendimentosData } = await supabase.from('empreendimentos').select('id, nome');
+      if (empreendimentosData) setEmpreendimentos(empreendimentosData);
 
       const { data: corretoresData } = await supabase.from('corretores').select('id, nome');
       if (corretoresData) setCorretores(corretoresData);
     }
     carregarFiltros();
   }, []);
+
+  function alterarEmpreendimento(valor) {
+    setEmpreendimentoId(valor);
+    setUnidadeId('');
+  }
+
+  const unidadesFiltradas = todasUnidades
+    .filter((un) => !empreendimentoId || un.blocos?.empreendimento_id === empreendimentoId)
+    .map((un) => ({
+      id: un.id,
+      rotulo: empreendimentoId ? un.identificacao : `${un.blocos?.empreendimentos?.nome ?? ''} · ${un.identificacao}`,
+    }));
 
   async function consultar() {
     setCarregando(true);
@@ -41,6 +60,7 @@ export default function RelatorioLocacoes() {
       p_corretor_id: corretorId || null,
       p_data_inicio: dataInicio || null,
       p_data_fim: dataFim || null,
+      p_empreendimento_id: empreendimentoId || null,
     });
 
     setCarregando(false);
@@ -72,12 +92,23 @@ export default function RelatorioLocacoes() {
 
       <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', marginBottom: '1rem' }}>
         <label>
+          Empreendimento (opcional)
+          <br />
+          <select value={empreendimentoId} onChange={(e) => alterarEmpreendimento(e.target.value)}>
+            <option value="">Todos</option>
+            {empreendimentos.map((emp) => (
+              <option key={emp.id} value={emp.id}>{emp.nome}</option>
+            ))}
+          </select>
+        </label>
+
+        <label>
           Unidade (opcional)
           <br />
           <select value={unidadeId} onChange={(e) => setUnidadeId(e.target.value)}>
             <option value="">Todas</option>
-            {unidades.map((un) => (
-              <option key={un.id} value={un.id}>{un.identificacao}</option>
+            {unidadesFiltradas.map((un) => (
+              <option key={un.id} value={un.id}>{un.rotulo}</option>
             ))}
           </select>
         </label>
@@ -120,6 +151,7 @@ export default function RelatorioLocacoes() {
         <table style={{ marginTop: '1.5rem', borderCollapse: 'collapse', width: '100%' }}>
           <thead>
             <tr>
+              <th style={{ textAlign: 'left', borderBottom: '1px solid #ccc' }}>Empreendimento</th>
               <th style={{ textAlign: 'left', borderBottom: '1px solid #ccc' }}>Unidade</th>
               <th style={{ textAlign: 'left', borderBottom: '1px solid #ccc' }}>Titulares</th>
               <th style={{ textAlign: 'left', borderBottom: '1px solid #ccc' }}>Corretor</th>
@@ -132,6 +164,7 @@ export default function RelatorioLocacoes() {
           <tbody>
             {resultado.map((linha) => (
               <tr key={linha.ocupacao_id}>
+                <td style={{ padding: '4px 8px' }}>{linha.empreendimento_nome}</td>
                 <td style={{ padding: '4px 8px' }}>{linha.unidade_identificacao}</td>
                 <td style={{ padding: '4px 8px' }}>{linha.cota_titulares}</td>
                 <td style={{ padding: '4px 8px' }}>{linha.corretor_nome}</td>
@@ -151,6 +184,7 @@ export default function RelatorioLocacoes() {
         <table style={{ marginTop: '1.5rem', borderCollapse: 'collapse', width: '100%' }}>
           <thead>
             <tr>
+              <th style={{ textAlign: 'left', borderBottom: '1px solid #ccc' }}>Empreendimento</th>
               <th style={{ textAlign: 'left', borderBottom: '1px solid #ccc' }}>Unidade</th>
               <th style={{ textAlign: 'left', borderBottom: '1px solid #ccc' }}>Titulares</th>
               <th style={{ textAlign: 'left', borderBottom: '1px solid #ccc' }}>Corretor</th>
@@ -164,6 +198,7 @@ export default function RelatorioLocacoes() {
           <tbody>
             {resultado.map((linha) => (
               <tr key={linha.pagamento_id}>
+                <td style={{ padding: '4px 8px' }}>{linha.empreendimento_nome}</td>
                 <td style={{ padding: '4px 8px' }}>{linha.unidade_identificacao}</td>
                 <td style={{ padding: '4px 8px' }}>{linha.cota_titulares}</td>
                 <td style={{ padding: '4px 8px' }}>{linha.corretor_nome}</td>

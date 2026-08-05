@@ -21,12 +21,12 @@ function formatarMoeda(valor) {
   return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 }
 
-function contarDiasInclusive(dataInicial, dataFinal) {
+function contarDias(dataInicial, dataFinal) {
   const [anoI, mesI, diaI] = dataInicial.split('-').map(Number);
   const [anoF, mesF, diaF] = dataFinal.split('-').map(Number);
   const inicio = Date.UTC(anoI, mesI - 1, diaI);
   const fim = Date.UTC(anoF, mesF - 1, diaF);
-  return Math.round((fim - inicio) / 86400000) + 1;
+  return Math.round((fim - inicio) / 86400000);
 }
 
 export default function CadastroOcupacoes() {
@@ -48,6 +48,7 @@ export default function CadastroOcupacoes() {
   const [corretorIdForm, setCorretorIdForm] = useState('');
   const [responsavelIdForm, setResponsavelIdForm] = useState('');
   const [valorBrutoForm, setValorBrutoForm] = useState('');
+  const [comissaoForm, setComissaoForm] = useState('');
   const [salvando, setSalvando] = useState(false);
   const [erroForm, setErroForm] = useState('');
 
@@ -148,6 +149,7 @@ export default function CadastroOcupacoes() {
     setCorretorIdForm('');
     setResponsavelIdForm('');
     setValorBrutoForm('');
+    setComissaoForm('');
 
     const { data, error } = await supabase
       .from('ocupacoes')
@@ -178,14 +180,15 @@ export default function CadastroOcupacoes() {
   const locacaoSelecionada = finalidadeForm === 'locação';
 
   const valorBrutoNumero = converterParaNumero(valorBrutoForm || '0');
+  const comissaoNumero = comissaoForm ? converterParaNumero(comissaoForm) : 0;
   const diasTrecho =
     dataInicialForm && dataFinalForm && dataFinalForm >= dataInicialForm
-      ? contarDiasInclusive(dataInicialForm, dataFinalForm)
+      ? contarDias(dataInicialForm, dataFinalForm)
       : 0;
-  const previaDiaria =
-    locacaoSelecionada && diasTrecho > 0 && valorBrutoForm.trim() && !Number.isNaN(valorBrutoNumero) && valorBrutoNumero > 0
-      ? valorBrutoNumero / diasTrecho
-      : null;
+  const previaValida =
+    locacaoSelecionada && diasTrecho > 0 && valorBrutoForm.trim() && !Number.isNaN(valorBrutoNumero) && valorBrutoNumero > 0;
+  const previaDiariaBruta = previaValida ? valorBrutoNumero / diasTrecho : null;
+  const previaDiariaLiquida = previaValida ? (valorBrutoNumero - comissaoNumero) / diasTrecho : null;
 
   async function salvar(event) {
     event.preventDefault();
@@ -211,7 +214,7 @@ export default function CadastroOcupacoes() {
     }
 
     const temSobreposicao = trechos.some(
-      (trecho) => dataInicialForm <= trecho.data_final && trecho.data_inicial <= dataFinalForm
+      (trecho) => dataInicialForm < trecho.data_final && trecho.data_inicial < dataFinalForm
     );
     if (temSobreposicao) {
       setErroForm('Este trecho tem datas sobrepostas com outro trecho já cadastrado para esta reserva.');
@@ -221,6 +224,7 @@ export default function CadastroOcupacoes() {
     let corretorId = null;
     let responsavelId = null;
     let valorBruto = null;
+    let comissao = null;
     let valorLiquido = null;
     let diariaBruta = null;
     let diariaLiquida = null;
@@ -238,13 +242,15 @@ export default function CadastroOcupacoes() {
         setErroForm('Informe um valor bruto válido.');
         return;
       }
-      const dias = contarDiasInclusive(dataInicialForm, dataFinalForm);
+      const dias = contarDias(dataInicialForm, dataFinalForm);
+      const comissaoNum = comissaoForm ? converterParaNumero(comissaoForm) : 0;
       corretorId = corretorIdForm;
       responsavelId = responsavelIdForm;
       valorBruto = valorBrutoNumero;
-      valorLiquido = valorBrutoNumero;
+      comissao = comissaoNum;
+      valorLiquido = valorBrutoNumero - comissaoNum;
       diariaBruta = valorBrutoNumero / dias;
-      diariaLiquida = valorBrutoNumero / dias;
+      diariaLiquida = valorLiquido / dias;
     }
 
     setSalvando(true);
@@ -257,7 +263,7 @@ export default function CadastroOcupacoes() {
       corretor_id: corretorId,
       responsavel_grupo_id: responsavelId,
       valor_bruto: valorBruto,
-      comissao: null,
+      comissao,
       valor_liquido: valorLiquido,
       diaria_bruta: diariaBruta,
       diaria_liquida: diariaLiquida,
@@ -474,12 +480,25 @@ export default function CadastroOcupacoes() {
                         onChange={(event) => setValorBrutoForm(event.target.value)}
                       />
                     </label>
+
+                    <label>
+                      Comissão
+                      <input
+                        type="text"
+                        inputMode="decimal"
+                        className="pa-campo"
+                        placeholder="0,00"
+                        value={comissaoForm}
+                        onChange={(event) => setComissaoForm(event.target.value)}
+                      />
+                    </label>
                   </div>
                 )}
 
-                {previaDiaria !== null && (
+                {previaDiariaBruta !== null && (
                   <p style={{ marginTop: '0.5rem' }}>
-                    Diária bruta: {formatarMoeda(previaDiaria)} · Diária líquida: {formatarMoeda(previaDiaria)}
+                    Diária bruta: {formatarMoeda(previaDiariaBruta)} · Diária líquida:{' '}
+                    {formatarMoeda(previaDiariaLiquida)}
                   </p>
                 )}
 

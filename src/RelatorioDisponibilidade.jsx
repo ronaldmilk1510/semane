@@ -122,6 +122,7 @@ export default function RelatorioDisponibilidade() {
         <table style={{ marginTop: '1.5rem', borderCollapse: 'collapse', width: '100%' }}>
           <thead>
             <tr>
+              <th style={{ textAlign: 'left', borderBottom: '1px solid #ccc' }}>Empreendimento</th>
               <th style={{ textAlign: 'left', borderBottom: '1px solid #ccc' }}>Unidade</th>
               <th style={{ textAlign: 'left', borderBottom: '1px solid #ccc' }}>Temporada</th>
               <th style={{ textAlign: 'left', borderBottom: '1px solid #ccc' }}>Status</th>
@@ -131,6 +132,7 @@ export default function RelatorioDisponibilidade() {
           <tbody>
             {resultado.map((linha) => (
               <tr key={linha.semana_id}>
+                <td style={{ padding: '4px 8px' }}>{linha.empreendimento_nome}</td>
                 <td style={{ padding: '4px 8px' }}>{linha.unidade_identificacao}</td>
                 <td style={{ padding: '4px 8px' }}>{linha.temporada_nome}</td>
                 <td style={{ padding: '4px 8px' }}>{linha.status}</td>
