@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import { supabase } from './supabaseClient'
+import logoSemane from './assets/semane-logo.png'
+import './Login.css'
 
 function Login() {
   const [email, setEmail] = useState('')
@@ -22,34 +24,43 @@ function Login() {
   }
 
   return (
-    <section id="login">
-      <h1>Login do administrador</h1>
-      <form onSubmit={handleSubmit}>
-        <div>
-          <label htmlFor="email">Email</label>
-          <input
-            id="email"
-            type="email"
-            value={email}
-            onChange={(event) => setEmail(event.target.value)}
-            required
-          />
+    <section className="login-page">
+      <div className="login-cartao">
+        <div className="login-topo">
+          <img src={logoSemane} alt="SEMANE" className="login-logo" />
+          <h1 className="login-nome">SEMANE</h1>
+          <p className="login-descricao">Gestão de multipropriedades</p>
+          <p className="login-saudacao">Seja bem-vindo!</p>
         </div>
-        <div>
-          <label htmlFor="password">Senha</label>
-          <input
-            id="password"
-            type="password"
-            value={password}
-            onChange={(event) => setPassword(event.target.value)}
-            required
-          />
-        </div>
-        {error && <p style={{ color: 'red' }}>{error}</p>}
-        <button type="submit" disabled={isSubmitting}>
-          {isSubmitting ? 'Entrando...' : 'Entrar'}
-        </button>
-      </form>
+        <form onSubmit={handleSubmit}>
+          <div className="login-campo">
+            <label htmlFor="email">Email</label>
+            <input
+              id="email"
+              type="email"
+              placeholder="nome@exemplo.com"
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
+              required
+            />
+          </div>
+          <div className="login-campo">
+            <label htmlFor="password">Senha</label>
+            <input
+              id="password"
+              type="password"
+              placeholder="Sua senha"
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+              required
+            />
+          </div>
+          {error && <p className="login-erro">{error}</p>}
+          <button type="submit" className="login-botao" disabled={isSubmitting}>
+            {isSubmitting ? 'Entrando...' : 'Entrar'}
+          </button>
+        </form>
+      </div>
     </section>
   )
 }

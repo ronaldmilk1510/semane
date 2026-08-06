@@ -1,0 +1,115 @@
+.login-page {
+  --login-bg: #f7f6f2;
+  --login-card-bg: #ffffff;
+  --login-borda: #dcdad2;
+  --login-azul: #0c3b44;
+  --login-texto-secundario: #5f5e5a;
+  --login-terracota: #993c1d;
+  --login-texto: #2c2c2a;
+
+  font-family: 'Inter', system-ui, 'Segoe UI', Roboto, sans-serif;
+  background: var(--login-bg);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: left;
+  padding: 24px;
+  box-sizing: border-box;
+}
+
+.login-cartao {
+  width: 100%;
+  max-width: 360px;
+  background: var(--login-card-bg);
+  border: 1px solid var(--login-borda);
+  border-radius: 12px;
+  padding: 32px;
+  box-sizing: border-box;
+}
+
+.login-topo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.login-logo {
+  height: 52px;
+  width: auto;
+  margin-bottom: 12px;
+}
+
+.login-nome {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--login-azul);
+}
+
+.login-descricao {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: var(--login-texto-secundario);
+}
+
+.login-saudacao {
+  margin: 16px 0 0;
+  font-size: 15px;
+  color: var(--login-texto-secundario);
+}
+
+.login-campo {
+  margin-bottom: 16px;
+}
+
+.login-campo label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--login-texto-secundario);
+}
+
+.login-campo input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px 12px;
+  font-family: inherit;
+  font-size: 15px;
+  color: var(--login-texto);
+  background: var(--login-card-bg);
+  border: 1px solid var(--login-borda);
+  border-radius: 8px;
+}
+
+.login-campo input:focus {
+  outline: none;
+  border-color: var(--login-azul);
+}
+
+.login-erro {
+  margin: 0 0 16px;
+  font-size: 13px;
+  color: var(--login-terracota);
+}
+
+.login-botao {
+  width: 100%;
+  padding: 12px;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  color: #ffffff;
+  background: var(--login-azul);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.login-botao:disabled {
+  opacity: 0.7;
+  cursor: default;
+}
