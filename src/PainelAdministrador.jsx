@@ -14,6 +14,7 @@ import CadastroReservas from './CadastroReservas';
 import CadastroOcupacoes from './CadastroOcupacoes';
 import CadastroPagamentos from './CadastroPagamentos';
 import CadastroDespesas from './CadastroDespesas';
+import CadastroDespesasRecorrentes from './CadastroDespesasRecorrentes';
 import RelatorioDisponibilidade from './RelatorioDisponibilidade';
 import RelatorioLocacoes from './RelatorioLocacoes';
 import RelatorioCaixa from './RelatorioCaixa';
@@ -56,7 +57,8 @@ const grupos = [
     id: 'despesas',
     titulo: 'Despesas',
     itens: [
-      { id: 'despesas', titulo: 'Despesas', Componente: CadastroDespesas },
+      { id: 'despesas', titulo: 'Despesas avulsas', Componente: CadastroDespesas },
+      { id: 'despesas-recorrentes', titulo: 'Despesas recorrentes', Componente: CadastroDespesasRecorrentes },
     ],
   },
   {

@@ -7,11 +7,6 @@ function formatarNomes(nomes) {
   return nomes.slice(0, -1).join(', ') + ' e ' + nomes[nomes.length - 1];
 }
 
-function formatarDataBr(data) {
-  if (!data) return '';
-  return data.split('-').reverse().join('/');
-}
-
 function converterParaNumero(texto) {
   const normalizado = texto.trim().replace(/\./g, '').replace(',', '.');
   return Number(normalizado);
@@ -21,12 +16,8 @@ function formatarMoeda(valor) {
   return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 }
 
-function hojeISO() {
-  const agora = new Date();
-  const ano = agora.getFullYear();
-  const mes = String(agora.getMonth() + 1).padStart(2, '0');
-  const dia = String(agora.getDate()).padStart(2, '0');
-  return `${ano}-${mes}-${dia}`;
+function formatarValorForm(valor) {
+  return String(valor).replace('.', ',');
 }
 
 const tiposDespesa = [
@@ -39,27 +30,31 @@ const tiposDespesa = [
 
 const rotuloTipo = Object.fromEntries(tiposDespesa.map((item) => [item.valor, item.rotulo]));
 
-export default function CadastroDespesas() {
+export default function CadastroDespesasRecorrentes() {
   const [cotas, setCotas] = useState([]);
   const [carregandoCotas, setCarregandoCotas] = useState(true);
   const [erroCotas, setErroCotas] = useState('');
 
   const [cotaSelecionadaId, setCotaSelecionadaId] = useState('');
-  const [despesas, setDespesas] = useState([]);
-  const [carregandoDespesas, setCarregandoDespesas] = useState(false);
-  const [erroDespesas, setErroDespesas] = useState('');
+  const [modelos, setModelos] = useState([]);
+  const [carregandoModelos, setCarregandoModelos] = useState(false);
+  const [erroModelos, setErroModelos] = useState('');
 
+  const [modoEdicaoId, setModoEdicaoId] = useState(null);
   const [tipoForm, setTipoForm] = useState('');
   const [descricaoForm, setDescricaoForm] = useState('');
   const [proprietarioIdForm, setProprietarioIdForm] = useState('');
   const [valorForm, setValorForm] = useState('');
-  const [dataForm, setDataForm] = useState(hojeISO());
+  const [diaDoMesForm, setDiaDoMesForm] = useState('');
+  const [ativoForm, setAtivoForm] = useState(true);
   const [salvando, setSalvando] = useState(false);
   const [erroForm, setErroForm] = useState('');
 
-  const [despesaParaExcluir, setDespesaParaExcluir] = useState(null);
-  const [excluindoDespesa, setExcluindoDespesa] = useState(false);
-  const [erroExclusaoDespesa, setErroExclusaoDespesa] = useState('');
+  const [itemParaExcluir, setItemParaExcluir] = useState(null);
+  const [verificandoExclusao, setVerificandoExclusao] = useState(false);
+  const [exclusaoBloqueada, setExclusaoBloqueada] = useState(false);
+  const [excluindo, setExcluindo] = useState(false);
+  const [erroExclusao, setErroExclusao] = useState('');
 
   async function carregarCotas() {
     setCarregandoCotas(true);
@@ -95,38 +90,44 @@ export default function CadastroDespesas() {
     carregarCotas();
   }, []);
 
-  async function carregarDespesas(cotaId) {
-    setCarregandoDespesas(true);
-    setErroDespesas('');
-    setErroForm('');
+  function limparFormulario() {
+    setModoEdicaoId(null);
     setTipoForm('');
     setDescricaoForm('');
     setProprietarioIdForm('');
     setValorForm('');
-    setDataForm(hojeISO());
+    setDiaDoMesForm('');
+    setAtivoForm(true);
+    setErroForm('');
+  }
+
+  async function carregarModelos(cotaId) {
+    setCarregandoModelos(true);
+    setErroModelos('');
+    limparFormulario();
 
     const { data, error } = await supabase
-      .from('despesas')
+      .from('despesas_recorrentes')
       .select('*')
       .eq('cota_id', cotaId)
       .order('created_at', { ascending: false });
 
-    setCarregandoDespesas(false);
+    setCarregandoModelos(false);
 
     if (error) {
-      setErroDespesas('Não foi possível carregar as despesas desta cota. Tente novamente.');
+      setErroModelos('Não foi possível carregar os modelos recorrentes desta cota. Tente novamente.');
       return;
     }
 
-    setDespesas(data);
+    setModelos(data);
   }
 
   function selecionarCota(id) {
     setCotaSelecionadaId(id);
     if (id) {
-      carregarDespesas(id);
+      carregarModelos(id);
     } else {
-      setDespesas([]);
+      setModelos([]);
     }
   }
 
@@ -141,12 +142,23 @@ export default function CadastroDespesas() {
   const exigeDescricao = tipoForm === 'outra';
   const exigeProprietario = tipoForm === 'retirada de lucro';
 
+  function abrirEditar(item) {
+    setModoEdicaoId(item.id);
+    setTipoForm(item.tipo);
+    setDescricaoForm(item.descricao || '');
+    setProprietarioIdForm(item.proprietario_id || '');
+    setValorForm(formatarValorForm(item.valor));
+    setDiaDoMesForm(String(item.dia_do_mes));
+    setAtivoForm(item.ativo);
+    setErroForm('');
+  }
+
   async function salvar(event) {
     event.preventDefault();
     setErroForm('');
 
     if (!tipoForm) {
-      setErroForm('Selecione o tipo da despesa.');
+      setErroForm('Selecione o tipo do modelo.');
       return;
     }
     if (exigeDescricao && !descricaoForm.trim()) {
@@ -163,64 +175,108 @@ export default function CadastroDespesas() {
       setErroForm('Informe um valor válido.');
       return;
     }
-    if (!dataForm) {
-      setErroForm('Informe a data do lançamento.');
+
+    const diaNumero = Number.parseInt(diaDoMesForm, 10);
+    if (!diaDoMesForm.trim() || Number.isNaN(diaNumero) || diaNumero < 1 || diaNumero > 28) {
+      setErroForm('Informe um dia do mês entre 1 e 28.');
       return;
     }
 
     setSalvando(true);
 
-    const { error } = await supabase.from('despesas').insert({
+    const dados = {
       cota_id: cotaSelecionadaId,
       tipo: tipoForm,
-      origem: 'avulsa',
-      despesa_recorrente_id: null,
       valor: valorNumero,
-      data: dataForm,
+      dia_do_mes: diaNumero,
       descricao: descricaoForm.trim(),
       proprietario_id: exigeProprietario ? proprietarioIdForm : null,
-    });
+      ativo: ativoForm,
+    };
+
+    const { error } = modoEdicaoId
+      ? await supabase.from('despesas_recorrentes').update(dados).eq('id', modoEdicaoId)
+      : await supabase.from('despesas_recorrentes').insert(dados);
 
     setSalvando(false);
 
     if (error) {
-      setErroForm('Não foi possível salvar a despesa. Tente novamente.');
+      setErroForm('Não foi possível salvar o modelo recorrente. Tente novamente.');
       return;
     }
 
-    carregarDespesas(cotaSelecionadaId);
+    limparFormulario();
+    carregarModelos(cotaSelecionadaId);
   }
 
-  function pedirExclusao(despesa) {
-    setDespesaParaExcluir(despesa);
-    setErroExclusaoDespesa('');
+  async function alternarAtivo(item) {
+    setErroModelos('');
+    const { error } = await supabase
+      .from('despesas_recorrentes')
+      .update({ ativo: !item.ativo })
+      .eq('id', item.id);
+
+    if (error) {
+      setErroModelos('Não foi possível atualizar o status deste modelo. Tente novamente.');
+      return;
+    }
+
+    carregarModelos(cotaSelecionadaId);
+  }
+
+  async function pedirExclusao(item) {
+    setItemParaExcluir(item);
+    setErroExclusao('');
+    setExclusaoBloqueada(false);
+    setVerificandoExclusao(true);
+
+    const { data, error } = await supabase
+      .from('despesas')
+      .select('id')
+      .eq('despesa_recorrente_id', item.id)
+      .limit(1);
+
+    setVerificandoExclusao(false);
+
+    if (error) {
+      setExclusaoBloqueada(false);
+      return;
+    }
+
+    setExclusaoBloqueada((data || []).length > 0);
   }
 
   function cancelarExclusao() {
-    setDespesaParaExcluir(null);
-    setErroExclusaoDespesa('');
+    setItemParaExcluir(null);
+    setErroExclusao('');
   }
 
   async function confirmarExclusao() {
-    setExcluindoDespesa(true);
-    setErroExclusaoDespesa('');
+    setExcluindo(true);
+    setErroExclusao('');
 
-    const { error } = await supabase.from('despesas').delete().eq('id', despesaParaExcluir.id);
+    const { error } = await supabase.from('despesas_recorrentes').delete().eq('id', itemParaExcluir.id);
 
-    setExcluindoDespesa(false);
+    setExcluindo(false);
 
     if (error) {
-      setErroExclusaoDespesa('Não foi possível excluir esta despesa. Tente novamente.');
+      if (error.code === '23503') {
+        setErroExclusao(
+          'Este modelo já gerou despesas e não pode ser excluído. Use a opção Desligar para encerrá-lo mantendo o histórico.'
+        );
+      } else {
+        setErroExclusao('Não foi possível excluir este modelo. Tente novamente.');
+      }
       return;
     }
 
-    setDespesaParaExcluir(null);
-    carregarDespesas(cotaSelecionadaId);
+    setItemParaExcluir(null);
+    carregarModelos(cotaSelecionadaId);
   }
 
   return (
     <div>
-      <h2>Despesas avulsas</h2>
+      <h2>Despesas recorrentes</h2>
 
       <label>
         Cota
@@ -237,40 +293,50 @@ export default function CadastroDespesas() {
       {erroCotas && <p className="pa-erro">{erroCotas}</p>}
 
       {!carregandoCotas && !erroCotas && !cotaSelecionadaId && (
-        <p className="pa-lista-vazia">Escolha uma cota para ver ou lançar suas despesas.</p>
+        <p className="pa-lista-vazia">Escolha uma cota para ver ou cadastrar seus modelos recorrentes.</p>
       )}
 
       {cotaSelecionadaId && (
         <>
-          {erroDespesas && <p className="pa-erro">{erroDespesas}</p>}
+          {erroModelos && <p className="pa-erro">{erroModelos}</p>}
 
-          {carregandoDespesas ? (
-            <p className="pa-lista-vazia">Carregando despesas...</p>
+          {carregandoModelos ? (
+            <p className="pa-lista-vazia">Carregando modelos recorrentes...</p>
           ) : (
             <>
-              {despesas.length > 0 && (
+              {modelos.length > 0 && (
                 <table className="pa-tabela" style={{ marginTop: '1rem' }}>
                   <thead>
                     <tr>
                       <th>Tipo</th>
                       <th>Valor</th>
-                      <th>Data</th>
-                      <th>Descrição</th>
+                      <th>Dia do mês</th>
+                      <th>Status</th>
                       <th></th>
                     </tr>
                   </thead>
                   <tbody>
-                    {despesas.map((despesa) => (
-                      <tr key={despesa.id}>
-                        <td>{rotuloTipo[despesa.tipo] ?? despesa.tipo}</td>
-                        <td>{formatarMoeda(Number(despesa.valor))}</td>
-                        <td>{formatarDataBr(despesa.data)}</td>
-                        <td>{despesa.descricao || '—'}</td>
+                    {modelos.map((modelo) => (
+                      <tr key={modelo.id}>
+                        <td>{rotuloTipo[modelo.tipo] ?? modelo.tipo}</td>
+                        <td>{formatarMoeda(Number(modelo.valor))}</td>
+                        <td>{modelo.dia_do_mes}</td>
+                        <td>{modelo.ativo ? 'Ativo' : 'Inativo'}</td>
                         <td>
+                          <button type="button" className="pa-botao-texto" onClick={() => abrirEditar(modelo)}>
+                            Editar
+                          </button>
+                          <button
+                            type="button"
+                            className="pa-botao-texto"
+                            onClick={() => alternarAtivo(modelo)}
+                          >
+                            {modelo.ativo ? 'Desligar' : 'Ativar'}
+                          </button>
                           <button
                             type="button"
                             className="pa-botao-texto pa-botao-texto-aviso"
-                            onClick={() => pedirExclusao(despesa)}
+                            onClick={() => pedirExclusao(modelo)}
                           >
                             Excluir
                           </button>
@@ -281,11 +347,12 @@ export default function CadastroDespesas() {
                 </table>
               )}
 
-              {despesas.length === 0 && (
-                <p className="pa-lista-vazia">Nenhuma despesa cadastrada para esta cota ainda.</p>
+              {modelos.length === 0 && (
+                <p className="pa-lista-vazia">Nenhum modelo recorrente cadastrado para esta cota ainda.</p>
               )}
 
               <form onSubmit={salvar} style={{ marginTop: '1.5rem' }}>
+                <h3>{modoEdicaoId ? 'Editar modelo recorrente' : 'Novo modelo recorrente'}</h3>
                 <div className="pa-editor-campos">
                   <label>
                     Tipo
@@ -344,13 +411,24 @@ export default function CadastroDespesas() {
                   </label>
 
                   <label>
-                    Data do lançamento
+                    Dia do mês
                     <input
-                      type="date"
+                      type="number"
+                      min="1"
+                      max="28"
                       className="pa-campo"
-                      value={dataForm}
-                      onChange={(event) => setDataForm(event.target.value)}
+                      value={diaDoMesForm}
+                      onChange={(event) => setDiaDoMesForm(event.target.value)}
                     />
+                  </label>
+
+                  <label className="pa-titular-checkbox">
+                    <input
+                      type="checkbox"
+                      checked={ativoForm}
+                      onChange={(event) => setAtivoForm(event.target.checked)}
+                    />
+                    Ativo
                   </label>
                 </div>
 
@@ -358,8 +436,13 @@ export default function CadastroDespesas() {
 
                 <div className="pa-modal-acoes" style={{ justifyContent: 'flex-start', marginTop: '1rem' }}>
                   <button type="submit" className="pa-botao" disabled={salvando}>
-                    {salvando ? 'Salvando...' : 'Salvar despesa'}
+                    {salvando ? 'Salvando...' : modoEdicaoId ? 'Salvar alterações' : 'Salvar modelo'}
                   </button>
+                  {modoEdicaoId && (
+                    <button type="button" className="pa-botao pa-botao-secundario" onClick={limparFormulario}>
+                      Cancelar edição
+                    </button>
+                  )}
                 </div>
               </form>
             </>
@@ -367,29 +450,50 @@ export default function CadastroDespesas() {
         </>
       )}
 
-      {despesaParaExcluir && (
+      {itemParaExcluir && (
         <div className="pa-modal-backdrop" onClick={cancelarExclusao}>
           <div className="pa-modal" onClick={(event) => event.stopPropagation()}>
-            <h3>Excluir despesa</h3>
-            <p>
-              Excluir a despesa de {rotuloTipo[despesaParaExcluir.tipo] ?? despesaParaExcluir.tipo} no valor de{' '}
-              {formatarMoeda(Number(despesaParaExcluir.valor))} em {formatarDataBr(despesaParaExcluir.data)}? Esta
-              ação não pode ser desfeita.
-            </p>
-            {erroExclusaoDespesa && <p className="pa-erro">{erroExclusaoDespesa}</p>}
-            <div className="pa-modal-acoes">
-              <button type="button" className="pa-botao pa-botao-secundario" onClick={cancelarExclusao}>
-                Cancelar
-              </button>
-              <button
-                type="button"
-                className="pa-botao pa-botao-perigo"
-                onClick={confirmarExclusao}
-                disabled={excluindoDespesa}
-              >
-                {excluindoDespesa ? 'Excluindo...' : 'Excluir despesa'}
-              </button>
-            </div>
+            <h3>Excluir modelo recorrente</h3>
+
+            {verificandoExclusao && <p>Verificando despesas já geradas por este modelo...</p>}
+
+            {!verificandoExclusao && exclusaoBloqueada && (
+              <>
+                <p>
+                  Este modelo já gerou despesas e não pode ser excluído, para preservar o histórico. Use a opção
+                  Desligar na lista para encerrá-lo sem perder os registros já lançados.
+                </p>
+                <div className="pa-modal-acoes">
+                  <button type="button" className="pa-botao pa-botao-secundario" onClick={cancelarExclusao}>
+                    Entendi
+                  </button>
+                </div>
+              </>
+            )}
+
+            {!verificandoExclusao && !exclusaoBloqueada && (
+              <>
+                <p>
+                  Excluir o modelo de {rotuloTipo[itemParaExcluir.tipo] ?? itemParaExcluir.tipo} no valor de{' '}
+                  {formatarMoeda(Number(itemParaExcluir.valor))}, no dia {itemParaExcluir.dia_do_mes} do mês? Esta
+                  ação não pode ser desfeita.
+                </p>
+                {erroExclusao && <p className="pa-erro">{erroExclusao}</p>}
+                <div className="pa-modal-acoes">
+                  <button type="button" className="pa-botao pa-botao-secundario" onClick={cancelarExclusao}>
+                    Cancelar
+                  </button>
+                  <button
+                    type="button"
+                    className="pa-botao pa-botao-perigo"
+                    onClick={confirmarExclusao}
+                    disabled={excluindo}
+                  >
+                    {excluindo ? 'Excluindo...' : 'Excluir modelo'}
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         </div>
       )}
