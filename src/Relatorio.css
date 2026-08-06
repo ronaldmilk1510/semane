@@ -31,12 +31,6 @@
   box-sizing: border-box;
 }
 
-.relatorio-breadcrumb {
-  margin: 0 0 0.5rem;
-  font-size: 0.8rem;
-  color: var(--rel-texto-secundario);
-}
-
 .relatorio-page .relatorio-titulo {
   margin: 0 0 1.25rem;
   font-size: 1.4rem;

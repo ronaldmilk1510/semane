@@ -73,7 +73,6 @@ export default function RelatorioDisponibilidade() {
 
   return (
     <div className="relatorio-page">
-      <p className="relatorio-breadcrumb">Relatórios &gt; Disponibilidade de Semanas</p>
       <h2 className="relatorio-titulo">Disponibilidade de Semanas</h2>
 
       <div className="relatorio-filtros">
