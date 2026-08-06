@@ -37,7 +37,7 @@
   color: var(--rel-texto-secundario);
 }
 
-.relatorio-titulo {
+.relatorio-page .relatorio-titulo {
   margin: 0 0 1.25rem;
   font-size: 1.4rem;
   font-weight: 700;
