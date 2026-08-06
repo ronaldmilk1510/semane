@@ -185,6 +185,6 @@
   background: var(--rel-linha-alt);
 }
 
-.relatorio-linha-secundaria td {
+.relatorio-tabela tbody tr.relatorio-linha-secundaria td {
   color: var(--rel-texto-secundario);
 }
