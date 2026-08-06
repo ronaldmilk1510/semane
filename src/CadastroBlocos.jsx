@@ -76,7 +76,7 @@ export default function CadastroBlocos() {
       return;
     }
 
-    const identificadorNormalizado = identificadorForm.trim();
+    const identificadorNormalizado = identificadorForm.trim().toUpperCase();
     const jaExiste = lista.some(
       (item) =>
         item.empreendimento_id === empreendimentoIdForm &&
