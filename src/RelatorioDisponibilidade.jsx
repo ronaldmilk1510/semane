@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from './supabaseClient';
+import './Relatorio.css';
 
 export default function RelatorioDisponibilidade() {
   const [empreendimentos, setEmpreendimentos] = useState([]);
@@ -71,13 +72,13 @@ export default function RelatorioDisponibilidade() {
   }
 
   return (
-    <div style={{ padding: '1.5rem', maxWidth: '800px' }}>
-      <h2>Disponibilidade de Semanas</h2>
+    <div className="relatorio-page">
+      <p className="relatorio-breadcrumb">Relatórios &gt; Disponibilidade de Semanas</p>
+      <h2 className="relatorio-titulo">Disponibilidade de Semanas</h2>
 
-      <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', marginBottom: '1rem' }}>
-        <label>
-          Empreendimento
-          <br />
+      <div className="relatorio-filtros">
+        <label className="relatorio-campo">
+          <span>Empreendimento</span>
           <select value={empreendimentoId} onChange={(e) => setEmpreendimentoId(e.target.value)}>
             {empreendimentos.map((emp) => (
               <option key={emp.id} value={emp.id}>{emp.nome}</option>
@@ -85,9 +86,8 @@ export default function RelatorioDisponibilidade() {
           </select>
         </label>
 
-        <label>
-          Ano de uso
-          <br />
+        <label className="relatorio-campo">
+          <span>Ano de uso</span>
           <input
             type="number"
             value={ano}
@@ -96,9 +96,8 @@ export default function RelatorioDisponibilidade() {
           />
         </label>
 
-        <label>
-          Unidade (opcional)
-          <br />
+        <label className="relatorio-campo">
+          <span>Unidade (opcional)</span>
           <select value={unidadeId} onChange={(e) => setUnidadeId(e.target.value)}>
             <option value="">Todas</option>
             {unidades.map((un) => (
@@ -108,47 +107,54 @@ export default function RelatorioDisponibilidade() {
         </label>
       </div>
 
-      <button onClick={consultar} disabled={!empreendimentoId || carregando}>
-        {carregando ? 'Consultando...' : 'Consultar'}
-      </button>
-      {' '}
-      <button onClick={() => window.print()} disabled={resultado.length === 0}>
-        Imprimir
-      </button>
+      <div className="relatorio-acoes">
+        <button className="relatorio-botao" onClick={consultar} disabled={!empreendimentoId || carregando}>
+          {carregando ? 'Consultando...' : 'Consultar'}
+        </button>
+        <button
+          className="relatorio-botao relatorio-botao-secundario"
+          onClick={() => window.print()}
+          disabled={resultado.length === 0}
+        >
+          Imprimir
+        </button>
+      </div>
 
-      {erro && <p style={{ color: 'red' }}>{erro}</p>}
+      {erro && <p className="relatorio-erro">{erro}</p>}
 
       {resultado.length > 0 && (
-        <table style={{ marginTop: '1.5rem', borderCollapse: 'collapse', width: '100%' }}>
-          <thead>
-            <tr>
-              <th style={{ textAlign: 'left', borderBottom: '1px solid #ccc' }}>Empreendimento</th>
-              <th style={{ textAlign: 'left', borderBottom: '1px solid #ccc' }}>Unidade</th>
-              <th style={{ textAlign: 'left', borderBottom: '1px solid #ccc' }}>Temporada</th>
-              <th style={{ textAlign: 'left', borderBottom: '1px solid #ccc' }}>Status</th>
-              <th style={{ textAlign: 'left', borderBottom: '1px solid #ccc' }}>Período</th>
-            </tr>
-          </thead>
-          <tbody>
-            {resultado.map((linha) => (
-              <tr key={linha.semana_id}>
-                <td style={{ padding: '4px 8px' }}>{linha.empreendimento_nome}</td>
-                <td style={{ padding: '4px 8px' }}>{linha.unidade_identificacao}</td>
-                <td style={{ padding: '4px 8px' }}>{linha.temporada_nome}</td>
-                <td style={{ padding: '4px 8px' }}>{linha.status}</td>
-                <td style={{ padding: '4px 8px' }}>
-                  {linha.data_inicial
-                    ? linha.data_inicial.split('-').reverse().join('/') + ' a ' + linha.data_final.split('-').reverse().join('/')
-                    : 'ainda não reservada'}
-                </td>
+        <div className="relatorio-quadro">
+          <table className="relatorio-tabela" style={{ minWidth: '700px' }}>
+            <thead>
+              <tr>
+                <th>Empreendimento</th>
+                <th>Unidade</th>
+                <th>Temporada</th>
+                <th>Status</th>
+                <th>Período</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {resultado.map((linha) => (
+                <tr key={linha.semana_id} className={!linha.data_inicial ? 'relatorio-linha-secundaria' : ''}>
+                  <td>{linha.empreendimento_nome}</td>
+                  <td>{linha.unidade_identificacao}</td>
+                  <td>{linha.temporada_nome}</td>
+                  <td>{linha.status}</td>
+                  <td>
+                    {linha.data_inicial
+                      ? linha.data_inicial.split('-').reverse().join('/') + ' a ' + linha.data_final.split('-').reverse().join('/')
+                      : 'ainda não reservada'}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
 
       {!carregando && resultado.length === 0 && !erro && (
-        <p style={{ marginTop: '1rem', color: '#666' }}>
+        <p className="relatorio-vazio">
           Escolha os filtros acima e clique em Consultar.
         </p>
       )}
