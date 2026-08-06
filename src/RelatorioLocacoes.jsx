@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from './supabaseClient';
+import './Relatorio.css';
 
 function formatarData(data) {
   if (!data) return null;
@@ -77,23 +78,27 @@ export default function RelatorioLocacoes() {
   }
 
   return (
-    <div style={{ padding: '1.5rem', maxWidth: '1000px' }}>
-      <h2>Locações</h2>
+    <div className="relatorio-page">
+      <h2 className="relatorio-titulo">Locações</h2>
 
-      <div style={{ marginBottom: '1rem' }}>
-        <button onClick={() => trocarVisao('sintetica')} disabled={visao === 'sintetica'}>
+      <div className="relatorio-abas">
+        <button
+          className={`relatorio-aba${visao === 'sintetica' ? ' relatorio-aba-ativa' : ''}`}
+          onClick={() => trocarVisao('sintetica')}
+        >
           Visão sintética
         </button>
-        {' '}
-        <button onClick={() => trocarVisao('analitica')} disabled={visao === 'analitica'}>
+        <button
+          className={`relatorio-aba${visao === 'analitica' ? ' relatorio-aba-ativa' : ''}`}
+          onClick={() => trocarVisao('analitica')}
+        >
           Visão analítica
         </button>
       </div>
 
-      <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', marginBottom: '1rem' }}>
-        <label>
-          Empreendimento (opcional)
-          <br />
+      <div className="relatorio-filtros">
+        <label className="relatorio-campo">
+          <span>Empreendimento (opcional)</span>
           <select value={empreendimentoId} onChange={(e) => alterarEmpreendimento(e.target.value)}>
             <option value="">Todos</option>
             {empreendimentos.map((emp) => (
@@ -102,9 +107,8 @@ export default function RelatorioLocacoes() {
           </select>
         </label>
 
-        <label>
-          Unidade (opcional)
-          <br />
+        <label className="relatorio-campo">
+          <span>Unidade (opcional)</span>
           <select value={unidadeId} onChange={(e) => setUnidadeId(e.target.value)}>
             <option value="">Todas</option>
             {unidadesFiltradas.map((un) => (
@@ -113,9 +117,8 @@ export default function RelatorioLocacoes() {
           </select>
         </label>
 
-        <label>
-          Corretor (opcional)
-          <br />
+        <label className="relatorio-campo">
+          <span>Corretor (opcional)</span>
           <select value={corretorId} onChange={(e) => setCorretorId(e.target.value)}>
             <option value="">Todos</option>
             {corretores.map((c) => (
@@ -124,99 +127,106 @@ export default function RelatorioLocacoes() {
           </select>
         </label>
 
-        <label>
-          Vencimento de
-          <br />
+        <label className="relatorio-campo">
+          <span>Vencimento de</span>
           <input type="date" value={dataInicio} onChange={(e) => setDataInicio(e.target.value)} />
         </label>
 
-        <label>
-          Vencimento até
-          <br />
+        <label className="relatorio-campo">
+          <span>Vencimento até</span>
           <input type="date" value={dataFim} onChange={(e) => setDataFim(e.target.value)} />
         </label>
       </div>
 
-      <button onClick={consultar} disabled={carregando}>
-        {carregando ? 'Consultando...' : 'Consultar'}
-      </button>
-      {' '}
-      <button onClick={() => window.print()} disabled={resultado.length === 0}>
-        Imprimir
-      </button>
+      <div className="relatorio-acoes">
+        <button className="relatorio-botao" onClick={consultar} disabled={carregando}>
+          {carregando ? 'Consultando...' : 'Consultar'}
+        </button>
+        <button
+          className="relatorio-botao relatorio-botao-secundario"
+          onClick={() => window.print()}
+          disabled={resultado.length === 0}
+        >
+          Imprimir
+        </button>
+      </div>
 
-      {erro && <p style={{ color: 'red' }}>{erro}</p>}
+      {erro && <p className="relatorio-erro">{erro}</p>}
 
       {resultado.length > 0 && visao === 'sintetica' && (
-        <table style={{ marginTop: '1.5rem', borderCollapse: 'collapse', width: '100%' }}>
-          <thead>
-            <tr>
-              <th style={{ textAlign: 'left', borderBottom: '1px solid #ccc' }}>Empreendimento</th>
-              <th style={{ textAlign: 'left', borderBottom: '1px solid #ccc' }}>Unidade</th>
-              <th style={{ textAlign: 'left', borderBottom: '1px solid #ccc' }}>Titulares</th>
-              <th style={{ textAlign: 'left', borderBottom: '1px solid #ccc' }}>Corretor</th>
-              <th style={{ textAlign: 'left', borderBottom: '1px solid #ccc' }}>Período</th>
-              <th style={{ textAlign: 'left', borderBottom: '1px solid #ccc' }}>Pago</th>
-              <th style={{ textAlign: 'left', borderBottom: '1px solid #ccc' }}>Pendente</th>
-              <th style={{ textAlign: 'left', borderBottom: '1px solid #ccc' }}>Em atraso</th>
-            </tr>
-          </thead>
-          <tbody>
-            {resultado.map((linha) => (
-              <tr key={linha.ocupacao_id}>
-                <td style={{ padding: '4px 8px' }}>{linha.empreendimento_nome}</td>
-                <td style={{ padding: '4px 8px' }}>{linha.unidade_identificacao}</td>
-                <td style={{ padding: '4px 8px' }}>{linha.cota_titulares}</td>
-                <td style={{ padding: '4px 8px' }}>{linha.corretor_nome}</td>
-                <td style={{ padding: '4px 8px' }}>
-                  {formatarData(linha.ocupacao_data_inicial)} a {formatarData(linha.ocupacao_data_final)}
-                </td>
-                <td style={{ padding: '4px 8px' }}>R$ {linha.total_pago}</td>
-                <td style={{ padding: '4px 8px' }}>R$ {linha.total_pendente}</td>
-                <td style={{ padding: '4px 8px' }}>R$ {linha.total_em_atraso}</td>
+        <div className="relatorio-quadro">
+          <table className="relatorio-tabela" style={{ minWidth: '900px' }}>
+            <thead>
+              <tr>
+                <th>Empreendimento</th>
+                <th>Unidade</th>
+                <th>Titulares</th>
+                <th>Corretor</th>
+                <th>Período</th>
+                <th>Pago</th>
+                <th>Pendente</th>
+                <th>Em atraso</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {resultado.map((linha) => (
+                <tr key={linha.ocupacao_id}>
+                  <td>{linha.empreendimento_nome}</td>
+                  <td>{linha.unidade_identificacao}</td>
+                  <td>{linha.cota_titulares}</td>
+                  <td>{linha.corretor_nome}</td>
+                  <td>
+                    {formatarData(linha.ocupacao_data_inicial)} a {formatarData(linha.ocupacao_data_final)}
+                  </td>
+                  <td>R$ {linha.total_pago}</td>
+                  <td>R$ {linha.total_pendente}</td>
+                  <td>R$ {linha.total_em_atraso}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
 
       {resultado.length > 0 && visao === 'analitica' && (
-        <table style={{ marginTop: '1.5rem', borderCollapse: 'collapse', width: '100%' }}>
-          <thead>
-            <tr>
-              <th style={{ textAlign: 'left', borderBottom: '1px solid #ccc' }}>Empreendimento</th>
-              <th style={{ textAlign: 'left', borderBottom: '1px solid #ccc' }}>Unidade</th>
-              <th style={{ textAlign: 'left', borderBottom: '1px solid #ccc' }}>Titulares</th>
-              <th style={{ textAlign: 'left', borderBottom: '1px solid #ccc' }}>Corretor</th>
-              <th style={{ textAlign: 'left', borderBottom: '1px solid #ccc' }}>Período</th>
-              <th style={{ textAlign: 'left', borderBottom: '1px solid #ccc' }}>Valor</th>
-              <th style={{ textAlign: 'left', borderBottom: '1px solid #ccc' }}>Vencimento</th>
-              <th style={{ textAlign: 'left', borderBottom: '1px solid #ccc' }}>Pagamento</th>
-              <th style={{ textAlign: 'left', borderBottom: '1px solid #ccc' }}>Situação</th>
-            </tr>
-          </thead>
-          <tbody>
-            {resultado.map((linha) => (
-              <tr key={linha.pagamento_id}>
-                <td style={{ padding: '4px 8px' }}>{linha.empreendimento_nome}</td>
-                <td style={{ padding: '4px 8px' }}>{linha.unidade_identificacao}</td>
-                <td style={{ padding: '4px 8px' }}>{linha.cota_titulares}</td>
-                <td style={{ padding: '4px 8px' }}>{linha.corretor_nome}</td>
-                <td style={{ padding: '4px 8px' }}>
-                  {formatarData(linha.ocupacao_data_inicial)} a {formatarData(linha.ocupacao_data_final)}
-                </td>
-                <td style={{ padding: '4px 8px' }}>R$ {linha.valor}</td>
-                <td style={{ padding: '4px 8px' }}>{formatarData(linha.data_vencimento)}</td>
-                <td style={{ padding: '4px 8px' }}>{formatarData(linha.data_pagamento) || 'não pago'}</td>
-                <td style={{ padding: '4px 8px' }}>{linha.situacao}</td>
+        <div className="relatorio-quadro">
+          <table className="relatorio-tabela" style={{ minWidth: '950px' }}>
+            <thead>
+              <tr>
+                <th>Empreendimento</th>
+                <th>Unidade</th>
+                <th>Titulares</th>
+                <th>Corretor</th>
+                <th>Período</th>
+                <th>Valor</th>
+                <th>Vencimento</th>
+                <th>Pagamento</th>
+                <th>Situação</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {resultado.map((linha) => (
+                <tr key={linha.pagamento_id}>
+                  <td>{linha.empreendimento_nome}</td>
+                  <td>{linha.unidade_identificacao}</td>
+                  <td>{linha.cota_titulares}</td>
+                  <td>{linha.corretor_nome}</td>
+                  <td>
+                    {formatarData(linha.ocupacao_data_inicial)} a {formatarData(linha.ocupacao_data_final)}
+                  </td>
+                  <td>R$ {linha.valor}</td>
+                  <td>{formatarData(linha.data_vencimento)}</td>
+                  <td>{formatarData(linha.data_pagamento) || 'não pago'}</td>
+                  <td>{linha.situacao}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
 
       {!carregando && resultado.length === 0 && !erro && (
-        <p style={{ marginTop: '1rem', color: '#666' }}>
+        <p className="relatorio-vazio">
           Escolha os filtros acima e clique em Consultar.
         </p>
       )}
