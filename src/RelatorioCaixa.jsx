@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from './supabaseClient';
+import './Relatorio.css';
 
 export default function RelatorioCaixa() {
   const [empreendimentos, setEmpreendimentos] = useState([]);
@@ -49,27 +50,33 @@ export default function RelatorioCaixa() {
   }
 
   return (
-    <div style={{ padding: '1.5rem', maxWidth: '900px' }}>
-      <h2>Resultado de Caixa</h2>
+    <div className="relatorio-page">
+      <h2 className="relatorio-titulo">Resultado de Caixa</h2>
 
-      <div style={{ marginBottom: '1rem' }}>
-        <button onClick={() => trocarVisao('cota')} disabled={visao === 'cota'}>
+      <div className="relatorio-abas">
+        <button
+          className={`relatorio-aba${visao === 'cota' ? ' relatorio-aba-ativa' : ''}`}
+          onClick={() => trocarVisao('cota')}
+        >
           Por cota
         </button>
-        {' '}
-        <button onClick={() => trocarVisao('geral')} disabled={visao === 'geral'}>
+        <button
+          className={`relatorio-aba${visao === 'geral' ? ' relatorio-aba-ativa' : ''}`}
+          onClick={() => trocarVisao('geral')}
+        >
           Geral
         </button>
-        {' '}
-        <button onClick={() => trocarVisao('titular')} disabled={visao === 'titular'}>
+        <button
+          className={`relatorio-aba${visao === 'titular' ? ' relatorio-aba-ativa' : ''}`}
+          onClick={() => trocarVisao('titular')}
+        >
           Por titular
         </button>
       </div>
 
-      <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', marginBottom: '1rem' }}>
-        <label>
-          Empreendimento (opcional)
-          <br />
+      <div className="relatorio-filtros">
+        <label className="relatorio-campo">
+          <span>Empreendimento (opcional)</span>
           <select value={empreendimentoId} onChange={(e) => setEmpreendimentoId(e.target.value)}>
             <option value="">Todos</option>
             {empreendimentos.map((emp) => (
@@ -78,108 +85,117 @@ export default function RelatorioCaixa() {
           </select>
         </label>
 
-        <label>
-          Período de
-          <br />
+        <label className="relatorio-campo">
+          <span>Período de</span>
           <input type="date" value={dataInicio} onChange={(e) => setDataInicio(e.target.value)} />
         </label>
 
-        <label>
-          Período até
-          <br />
+        <label className="relatorio-campo">
+          <span>Período até</span>
           <input type="date" value={dataFim} onChange={(e) => setDataFim(e.target.value)} />
         </label>
       </div>
 
-      <button onClick={consultar} disabled={carregando}>
-        {carregando ? 'Consultando...' : 'Consultar'}
-      </button>
-      {' '}
-      <button onClick={() => window.print()} disabled={!resultado}>
-        Imprimir
-      </button>
+      <div className="relatorio-acoes">
+        <button className="relatorio-botao" onClick={consultar} disabled={carregando}>
+          {carregando ? 'Consultando...' : 'Consultar'}
+        </button>
+        <button
+          className="relatorio-botao relatorio-botao-secundario"
+          onClick={() => window.print()}
+          disabled={!resultado}
+        >
+          Imprimir
+        </button>
+      </div>
 
-      {erro && <p style={{ color: 'red' }}>{erro}</p>}
+      {erro && <p className="relatorio-erro">{erro}</p>}
 
       {resultado && visao === 'cota' && (
-        <table style={{ marginTop: '1.5rem', borderCollapse: 'collapse', width: '100%' }}>
-          <thead>
-            <tr>
-              <th style={{ textAlign: 'left', borderBottom: '1px solid #ccc' }}>Empreendimento</th>
-              <th style={{ textAlign: 'left', borderBottom: '1px solid #ccc' }}>Unidade</th>
-              <th style={{ textAlign: 'left', borderBottom: '1px solid #ccc' }}>Titulares</th>
-              <th style={{ textAlign: 'left', borderBottom: '1px solid #ccc' }}>Entradas</th>
-              <th style={{ textAlign: 'left', borderBottom: '1px solid #ccc' }}>Saídas</th>
-              <th style={{ textAlign: 'left', borderBottom: '1px solid #ccc' }}>Saldo</th>
-              <th style={{ textAlign: 'left', borderBottom: '1px solid #ccc' }}>A receber</th>
-            </tr>
-          </thead>
-          <tbody>
-            {resultado.map((linha) => (
-              <tr key={linha.cota_id}>
-                <td style={{ padding: '4px 8px' }}>{linha.empreendimento_nome}</td>
-                <td style={{ padding: '4px 8px' }}>{linha.unidade_identificacao}</td>
-                <td style={{ padding: '4px 8px' }}>{linha.cota_titulares}</td>
-                <td style={{ padding: '4px 8px' }}>R$ {linha.entradas}</td>
-                <td style={{ padding: '4px 8px' }}>R$ {linha.saidas}</td>
-                <td style={{ padding: '4px 8px' }}>R$ {linha.saldo}</td>
-                <td style={{ padding: '4px 8px' }}>R$ {linha.a_receber}</td>
+        <div className="relatorio-quadro">
+          <table className="relatorio-tabela" style={{ minWidth: '750px' }}>
+            <thead>
+              <tr>
+                <th>Empreendimento</th>
+                <th>Unidade</th>
+                <th>Titulares</th>
+                <th>Entradas</th>
+                <th>Saídas</th>
+                <th>Saldo</th>
+                <th>A receber</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {resultado.map((linha) => (
+                <tr key={linha.cota_id}>
+                  <td>{linha.empreendimento_nome}</td>
+                  <td>{linha.unidade_identificacao}</td>
+                  <td>{linha.cota_titulares}</td>
+                  <td>R$ {linha.entradas}</td>
+                  <td>R$ {linha.saidas}</td>
+                  <td>R$ {linha.saldo}</td>
+                  <td>R$ {linha.a_receber}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
 
       {resultado && visao === 'geral' && (
-        <table style={{ marginTop: '1.5rem', borderCollapse: 'collapse', width: '100%' }}>
-          <thead>
-            <tr>
-              <th style={{ textAlign: 'left', borderBottom: '1px solid #ccc' }}>Entradas</th>
-              <th style={{ textAlign: 'left', borderBottom: '1px solid #ccc' }}>Saídas</th>
-              <th style={{ textAlign: 'left', borderBottom: '1px solid #ccc' }}>Saldo</th>
-              <th style={{ textAlign: 'left', borderBottom: '1px solid #ccc' }}>A receber</th>
-            </tr>
-          </thead>
-          <tbody>
-            {resultado.map((linha, indice) => (
-              <tr key={indice}>
-                <td style={{ padding: '4px 8px' }}>R$ {linha.entradas}</td>
-                <td style={{ padding: '4px 8px' }}>R$ {linha.saidas}</td>
-                <td style={{ padding: '4px 8px' }}>R$ {linha.saldo}</td>
-                <td style={{ padding: '4px 8px' }}>R$ {linha.a_receber}</td>
+        <div className="relatorio-quadro">
+          <table className="relatorio-tabela" style={{ minWidth: '500px' }}>
+            <thead>
+              <tr>
+                <th>Entradas</th>
+                <th>Saídas</th>
+                <th>Saldo</th>
+                <th>A receber</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {resultado.map((linha, indice) => (
+                <tr key={indice}>
+                  <td>R$ {linha.entradas}</td>
+                  <td>R$ {linha.saidas}</td>
+                  <td>R$ {linha.saldo}</td>
+                  <td>R$ {linha.a_receber}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
 
       {resultado && visao === 'titular' && (
-        <table style={{ marginTop: '1.5rem', borderCollapse: 'collapse', width: '100%' }}>
-          <thead>
-            <tr>
-              <th style={{ textAlign: 'left', borderBottom: '1px solid #ccc' }}>Proprietário</th>
-              <th style={{ textAlign: 'left', borderBottom: '1px solid #ccc' }}>Entradas</th>
-              <th style={{ textAlign: 'left', borderBottom: '1px solid #ccc' }}>Saídas</th>
-              <th style={{ textAlign: 'left', borderBottom: '1px solid #ccc' }}>Saldo</th>
-              <th style={{ textAlign: 'left', borderBottom: '1px solid #ccc' }}>A receber</th>
-            </tr>
-          </thead>
-          <tbody>
-            {resultado.map((linha) => (
-              <tr key={linha.proprietario_id}>
-                <td style={{ padding: '4px 8px' }}>{linha.proprietario_nome}</td>
-                <td style={{ padding: '4px 8px' }}>R$ {linha.entradas}</td>
-                <td style={{ padding: '4px 8px' }}>R$ {linha.saidas}</td>
-                <td style={{ padding: '4px 8px' }}>R$ {linha.saldo}</td>
-                <td style={{ padding: '4px 8px' }}>R$ {linha.a_receber}</td>
+        <div className="relatorio-quadro">
+          <table className="relatorio-tabela" style={{ minWidth: '650px' }}>
+            <thead>
+              <tr>
+                <th>Proprietário</th>
+                <th>Entradas</th>
+                <th>Saídas</th>
+                <th>Saldo</th>
+                <th>A receber</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {resultado.map((linha) => (
+                <tr key={linha.proprietario_id}>
+                  <td>{linha.proprietario_nome}</td>
+                  <td>R$ {linha.entradas}</td>
+                  <td>R$ {linha.saidas}</td>
+                  <td>R$ {linha.saldo}</td>
+                  <td>R$ {linha.a_receber}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
 
       {!carregando && !resultado && !erro && (
-        <p style={{ marginTop: '1rem', color: '#666' }}>
+        <p className="relatorio-vazio">
           Escolha o período (opcional) e clique em Consultar.
         </p>
       )}
