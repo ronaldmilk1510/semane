@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from './supabaseClient';
+import { formatarMoeda } from './utils';
 import './Relatorio.css';
 
 function formatarData(data) {
@@ -178,9 +179,9 @@ export default function RelatorioLocacoes() {
                   <td>
                     {formatarData(linha.ocupacao_data_inicial)} a {formatarData(linha.ocupacao_data_final)}
                   </td>
-                  <td>R$ {linha.total_pago}</td>
-                  <td>R$ {linha.total_pendente}</td>
-                  <td>R$ {linha.total_em_atraso}</td>
+                  <td>{formatarMoeda(linha.total_pago)}</td>
+                  <td>{formatarMoeda(linha.total_pendente)}</td>
+                  <td>{formatarMoeda(linha.total_em_atraso)}</td>
                 </tr>
               ))}
             </tbody>
@@ -214,7 +215,7 @@ export default function RelatorioLocacoes() {
                   <td>
                     {formatarData(linha.ocupacao_data_inicial)} a {formatarData(linha.ocupacao_data_final)}
                   </td>
-                  <td>R$ {linha.valor}</td>
+                  <td>{formatarMoeda(linha.valor)}</td>
                   <td>{formatarData(linha.data_vencimento)}</td>
                   <td>{formatarData(linha.data_pagamento) || 'não pago'}</td>
                   <td>{linha.situacao}</td>

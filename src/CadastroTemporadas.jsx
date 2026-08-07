@@ -1,9 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from './supabaseClient';
-
-function formatarMoeda(valor) {
-  return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(valor);
-}
+import { formatarMoeda } from './utils';
 
 function converterParaNumero(texto) {
   const normalizado = texto.trim().replace(/\./g, '').replace(',', '.');

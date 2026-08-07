@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from './supabaseClient';
+import { formatarMoeda } from './utils';
 import './Relatorio.css';
 
 export default function RelatorioCaixa() {
@@ -133,12 +134,12 @@ export default function RelatorioCaixa() {
                   <td>{linha.empreendimento_nome}</td>
                   <td>{linha.unidade_identificacao}</td>
                   <td>{linha.cota_titulares}</td>
-                  <td>R$ {linha.saldo_inicial}</td>
+                  <td>{formatarMoeda(linha.saldo_inicial)}</td>
                   <td>{linha.data_corte ? linha.data_corte.split('-').reverse().join('/') : '—'}</td>
-                  <td>R$ {linha.entradas}</td>
-                  <td>R$ {linha.saidas}</td>
-                  <td>R$ {linha.saldo}</td>
-                  <td>R$ {linha.a_receber}</td>
+                  <td>{formatarMoeda(linha.entradas)}</td>
+                  <td>{formatarMoeda(linha.saidas)}</td>
+                  <td>{formatarMoeda(linha.saldo)}</td>
+                  <td>{formatarMoeda(linha.a_receber)}</td>
                 </tr>
               ))}
             </tbody>
@@ -161,11 +162,11 @@ export default function RelatorioCaixa() {
             <tbody>
               {resultado.map((linha, indice) => (
                 <tr key={indice}>
-                  <td>R$ {linha.saldo_inicial}</td>
-                  <td>R$ {linha.entradas}</td>
-                  <td>R$ {linha.saidas}</td>
-                  <td>R$ {linha.saldo}</td>
-                  <td>R$ {linha.a_receber}</td>
+                  <td>{formatarMoeda(linha.saldo_inicial)}</td>
+                  <td>{formatarMoeda(linha.entradas)}</td>
+                  <td>{formatarMoeda(linha.saidas)}</td>
+                  <td>{formatarMoeda(linha.saldo)}</td>
+                  <td>{formatarMoeda(linha.a_receber)}</td>
                 </tr>
               ))}
             </tbody>
@@ -190,11 +191,11 @@ export default function RelatorioCaixa() {
               {resultado.map((linha) => (
                 <tr key={linha.proprietario_id}>
                   <td>{linha.proprietario_nome}</td>
-                  <td>R$ {linha.saldo_inicial}</td>
-                  <td>R$ {linha.entradas}</td>
-                  <td>R$ {linha.saidas}</td>
-                  <td>R$ {linha.saldo}</td>
-                  <td>R$ {linha.a_receber}</td>
+                  <td>{formatarMoeda(linha.saldo_inicial)}</td>
+                  <td>{formatarMoeda(linha.entradas)}</td>
+                  <td>{formatarMoeda(linha.saidas)}</td>
+                  <td>{formatarMoeda(linha.saldo)}</td>
+                  <td>{formatarMoeda(linha.a_receber)}</td>
                 </tr>
               ))}
             </tbody>

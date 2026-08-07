@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from './supabaseClient';
+import { formatarMoeda } from './utils';
 
 function formatarNomes(nomes) {
   if (nomes.length === 0) return '';
@@ -15,10 +16,6 @@ function formatarDataBr(data) {
 function converterParaNumero(texto) {
   const normalizado = texto.trim().replace(/\./g, '').replace(',', '.');
   return Number(normalizado);
-}
-
-function formatarMoeda(valor) {
-  return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 }
 
 function contarDias(dataInicial, dataFinal) {
