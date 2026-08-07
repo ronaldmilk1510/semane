@@ -29,7 +29,7 @@ function Login() {
         <div className="login-topo">
           <img src={logoSemane} alt="SEMANE" className="login-logo" />
           <h1 className="login-nome">SEMANE</h1>
-          <p className="login-descricao">Gestão de multipropriedades</p>
+          <p className="login-descricao">Gestão de multipropriedades em resorts</p>
           <p className="login-saudacao">Seja bem-vindo!</p>
         </div>
         <form onSubmit={handleSubmit}>
