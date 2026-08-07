@@ -113,12 +113,14 @@ export default function RelatorioCaixa() {
 
       {resultado && visao === 'cota' && (
         <div className="relatorio-quadro">
-          <table className="relatorio-tabela" style={{ minWidth: '750px' }}>
+          <table className="relatorio-tabela" style={{ minWidth: '900px' }}>
             <thead>
               <tr>
                 <th>Empreendimento</th>
                 <th>Unidade</th>
                 <th>Titulares</th>
+                <th>Saldo inicial</th>
+                <th>Data de corte</th>
                 <th>Entradas</th>
                 <th>Saídas</th>
                 <th>Saldo</th>
@@ -131,6 +133,8 @@ export default function RelatorioCaixa() {
                   <td>{linha.empreendimento_nome}</td>
                   <td>{linha.unidade_identificacao}</td>
                   <td>{linha.cota_titulares}</td>
+                  <td>R$ {linha.saldo_inicial}</td>
+                  <td>{linha.data_corte ? linha.data_corte.split('-').reverse().join('/') : '—'}</td>
                   <td>R$ {linha.entradas}</td>
                   <td>R$ {linha.saidas}</td>
                   <td>R$ {linha.saldo}</td>
@@ -144,9 +148,10 @@ export default function RelatorioCaixa() {
 
       {resultado && visao === 'geral' && (
         <div className="relatorio-quadro">
-          <table className="relatorio-tabela" style={{ minWidth: '500px' }}>
+          <table className="relatorio-tabela" style={{ minWidth: '600px' }}>
             <thead>
               <tr>
+                <th>Saldo inicial</th>
                 <th>Entradas</th>
                 <th>Saídas</th>
                 <th>Saldo</th>
@@ -156,6 +161,7 @@ export default function RelatorioCaixa() {
             <tbody>
               {resultado.map((linha, indice) => (
                 <tr key={indice}>
+                  <td>R$ {linha.saldo_inicial}</td>
                   <td>R$ {linha.entradas}</td>
                   <td>R$ {linha.saidas}</td>
                   <td>R$ {linha.saldo}</td>
@@ -169,10 +175,11 @@ export default function RelatorioCaixa() {
 
       {resultado && visao === 'titular' && (
         <div className="relatorio-quadro">
-          <table className="relatorio-tabela" style={{ minWidth: '650px' }}>
+          <table className="relatorio-tabela" style={{ minWidth: '750px' }}>
             <thead>
               <tr>
                 <th>Proprietário</th>
+                <th>Saldo inicial</th>
                 <th>Entradas</th>
                 <th>Saídas</th>
                 <th>Saldo</th>
@@ -183,6 +190,7 @@ export default function RelatorioCaixa() {
               {resultado.map((linha) => (
                 <tr key={linha.proprietario_id}>
                   <td>{linha.proprietario_nome}</td>
+                  <td>R$ {linha.saldo_inicial}</td>
                   <td>R$ {linha.entradas}</td>
                   <td>R$ {linha.saidas}</td>
                   <td>R$ {linha.saldo}</td>

@@ -5,6 +5,7 @@ import CadastroUnidades from './CadastroUnidades';
 import CadastroTemporadas from './CadastroTemporadas';
 import CadastroProprietarios from './CadastroProprietarios';
 import CadastroCotas from './CadastroCotas';
+import CadastroSaldoInicialCota from './CadastroSaldoInicialCota';
 import CadastroPrioridadesAno from './CadastroPrioridadesAno';
 import CadastroModeloDatasPadrao from './CadastroModeloDatasPadrao';
 import CadastroSemanas from './CadastroSemanas';
@@ -31,6 +32,7 @@ const grupos = [
       { id: 'temporadas', titulo: 'Temporadas', Componente: CadastroTemporadas },
       { id: 'proprietarios', titulo: 'Proprietários', Componente: CadastroProprietarios },
       { id: 'cotas', titulo: 'Cotas', Componente: CadastroCotas },
+      { id: 'saldo-inicial-cota', titulo: 'Saldo inicial por cota', Componente: CadastroSaldoInicialCota },
     ],
   },
   {
