@@ -59,7 +59,7 @@ const grupos = [
     id: 'despesas',
     titulo: 'Despesas',
     itens: [
-      { id: 'despesas', titulo: 'Despesas avulsas', Componente: CadastroDespesas },
+      { id: 'despesas', titulo: 'Despesas em geral', Componente: CadastroDespesas },
       { id: 'despesas-recorrentes', titulo: 'Despesas recorrentes', Componente: CadastroDespesasRecorrentes },
     ],
   },

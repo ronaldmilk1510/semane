@@ -217,7 +217,7 @@ export default function CadastroDespesas() {
 
   return (
     <div>
-      <h2>Despesas avulsas</h2>
+      <h2>Despesas em geral</h2>
 
       <label>
         Cota
