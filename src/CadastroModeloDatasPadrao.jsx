@@ -1,10 +1,16 @@
 import { useState, useEffect } from 'react';
 import { supabase } from './supabaseClient';
 
+const ANO_PLACEHOLDER = '2000';
+
 function formatarDataCurta(data) {
   if (!data) return '';
   const [, mes, dia] = data.split('-');
   return `${dia}/${mes}`;
+}
+
+function diasNoMes(mes) {
+  return new Date(Number(ANO_PLACEHOLDER), Number(mes), 0).getDate();
 }
 
 export default function CadastroModeloDatasPadrao() {
@@ -18,7 +24,8 @@ export default function CadastroModeloDatasPadrao() {
   const [modalAberto, setModalAberto] = useState(false);
   const [modoEdicaoId, setModoEdicaoId] = useState(null);
   const [numeroPrioridadeForm, setNumeroPrioridadeForm] = useState('');
-  const [dataPadraoForm, setDataPadraoForm] = useState('');
+  const [diaForm, setDiaForm] = useState('');
+  const [mesForm, setMesForm] = useState('');
   const [salvando, setSalvando] = useState(false);
   const [erroForm, setErroForm] = useState('');
 
@@ -58,7 +65,8 @@ export default function CadastroModeloDatasPadrao() {
   function abrirAdicionar() {
     setModoEdicaoId(null);
     setNumeroPrioridadeForm('');
-    setDataPadraoForm('');
+    setDiaForm('');
+    setMesForm('');
     setErroForm('');
     setModalAberto(true);
   }
@@ -66,7 +74,9 @@ export default function CadastroModeloDatasPadrao() {
   function abrirEditar(item) {
     setModoEdicaoId(item.id);
     setNumeroPrioridadeForm(String(item.numero_prioridade));
-    setDataPadraoForm(item.data_padrao);
+    const [, mes, dia] = (item.data_padrao || '').split('-');
+    setDiaForm(dia ? String(Number(dia)) : '');
+    setMesForm(mes ? String(Number(mes)) : '');
     setErroForm('');
     setModalAberto(true);
   }
@@ -83,8 +93,18 @@ export default function CadastroModeloDatasPadrao() {
       setErroForm('Informe um número de prioridade válido.');
       return;
     }
-    if (!dataPadraoForm) {
-      setErroForm('Informe a data padrão.');
+    const dia = Number(diaForm);
+    const mes = Number(mesForm);
+    if (!diaForm.toString().trim() || Number.isNaN(dia) || !Number.isInteger(dia) || dia < 1 || dia > 31) {
+      setErroForm('Informe um dia válido.');
+      return;
+    }
+    if (!mesForm.toString().trim() || Number.isNaN(mes) || !Number.isInteger(mes) || mes < 1 || mes > 12) {
+      setErroForm('Informe um mês válido.');
+      return;
+    }
+    if (dia > diasNoMes(mes)) {
+      setErroForm('Este dia não existe para o mês informado.');
       return;
     }
 
@@ -102,10 +122,11 @@ export default function CadastroModeloDatasPadrao() {
     setSalvando(true);
     setErroForm('');
 
+    const dataPadrao = `${ANO_PLACEHOLDER}-${String(mes).padStart(2, '0')}-${String(dia).padStart(2, '0')}`;
     const dados = {
       empreendimento_id: empreendimentoIdFiltro,
       numero_prioridade: numero,
-      data_padrao: dataPadraoForm,
+      data_padrao: dataPadrao,
     };
     const { error } = modoEdicaoId
       ? await supabase.from('modelo_datas_padrao').update(dados).eq('id', modoEdicaoId)
@@ -243,12 +264,27 @@ export default function CadastroModeloDatasPadrao() {
                 />
               </label>
               <label>
-                Data padrão
-                <input
-                  type="date"
-                  value={dataPadraoForm}
-                  onChange={(event) => setDataPadraoForm(event.target.value)}
-                />
+                Data padrão (dia e mês, sem ano)
+                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                  <input
+                    type="number"
+                    placeholder="Dia"
+                    min="1"
+                    max="31"
+                    style={{ width: '80px' }}
+                    value={diaForm}
+                    onChange={(event) => setDiaForm(event.target.value)}
+                  />
+                  <input
+                    type="number"
+                    placeholder="Mês"
+                    min="1"
+                    max="12"
+                    style={{ width: '80px' }}
+                    value={mesForm}
+                    onChange={(event) => setMesForm(event.target.value)}
+                  />
+                </div>
               </label>
               {erroForm && <p className="pa-erro">{erroForm}</p>}
               <div className="pa-modal-acoes">

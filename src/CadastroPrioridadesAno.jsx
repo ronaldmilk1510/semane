@@ -305,19 +305,25 @@ export default function CadastroPrioridadesAno() {
     if (!modoEdicao) {
       const { data: existentes, error: erroExistentes } = await supabase
         .from('prioridades_do_ano')
-        .select('id')
+        .select('numero_prioridade, bloco_id')
         .eq('empreendimento_id', empreendimentoIdForm)
-        .eq('ano', Number(anoForm))
-        .limit(1);
+        .eq('ano', Number(anoForm));
       if (erroExistentes) {
         setSalvando(false);
         setErroForm('Não foi possível salvar a grade. Tente novamente.');
         return;
       }
-      if (existentes.length > 0) {
+      const linhaConflitante = linhas.find((linha) =>
+        existentes.some(
+          (item) =>
+            item.bloco_id === linha.blocoId && item.numero_prioridade === Number(linha.numeroPrioridade)
+        )
+      );
+      if (linhaConflitante) {
+        const bloco = blocos.find((item) => item.id === linhaConflitante.blocoId);
         setSalvando(false);
         setErroForm(
-          'Já existe uma grade cadastrada para este empreendimento e ano. Volte à lista e use Editar para alterá-la.'
+          `Já existe a prioridade número ${linhaConflitante.numeroPrioridade} cadastrada para o bloco ${bloco?.identificador ?? ''} neste empreendimento e ano.`
         );
         return;
       }
