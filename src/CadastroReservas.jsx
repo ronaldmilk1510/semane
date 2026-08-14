@@ -120,6 +120,7 @@ export default function CadastroReservas() {
             id: item.id,
             semanaId: item.semana_id,
             rotulo: semana?.rotulo ?? '',
+            temporadaNome: semana?.temporadaNome ?? '',
             dataInicial: item.data_inicial,
             dataFinal: item.data_final,
           };
@@ -369,6 +370,7 @@ export default function CadastroReservas() {
                   <thead>
                     <tr>
                       <th>Semana</th>
+                      <th>Temporada</th>
                       <th>Data inicial</th>
                       <th>Data final</th>
                       <th></th>
@@ -378,6 +380,7 @@ export default function CadastroReservas() {
                     {reservas.map((reserva) => (
                       <tr key={reserva.id}>
                         <td>{reserva.rotulo}</td>
+                        <td>{reserva.temporadaNome}</td>
                         <td>{formatarDataBr(reserva.dataInicial)}</td>
                         <td>{formatarDataBr(reserva.dataFinal)}</td>
                         <td>
