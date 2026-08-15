@@ -162,6 +162,17 @@ export default function CadastroReservas() {
     setDataFinalForm(valor ? somarDias(valor, 7) : '');
   }
 
+  useEffect(() => {
+    if (!semanaIdForm || !dataInicialForm) return;
+    const anoUso = Number(dataInicialForm.slice(0, 4));
+    const semanaJaTemReservaNoAno = reservas.some(
+      (item) => item.semanaId === semanaIdForm && Number(item.dataInicial.slice(0, 4)) === anoUso
+    );
+    if (semanaJaTemReservaNoAno) {
+      setSemanaIdForm('');
+    }
+  }, [dataInicialForm, reservas, semanaIdForm]);
+
   async function salvar(event) {
     event.preventDefault();
     setErroForm('');
@@ -290,6 +301,14 @@ export default function CadastroReservas() {
     carregarSemanasEReservas(cotaSelecionadaId);
   }
 
+  const anoUsoForm = dataInicialForm ? Number(dataInicialForm.slice(0, 4)) : null;
+  const semanasComReservaNoAnoForm = new Set(
+    anoUsoForm === null
+      ? []
+      : reservas.filter((item) => Number(item.dataInicial.slice(0, 4)) === anoUsoForm).map((item) => item.semanaId)
+  );
+  const semanasDisponiveisForm = semanas.filter((item) => !semanasComReservaNoAnoForm.has(item.id));
+
   const anosDisponiveis = Array.from(new Set(reservas.map((reserva) => Number(reserva.dataInicial.slice(0, 4))))).sort(
     (a, b) => a - b
   );
@@ -338,7 +357,9 @@ export default function CadastroReservas() {
                 <form onSubmit={salvar} style={{ marginTop: '1.25rem' }}>
                   <div className="pa-editor-campos">
                     <label>
-                      {/* Toda semana fica disponível aqui, mesmo já tendo reserva em outro ano: é direito flutuante, uma reserva por ano. A sobreposição real de datas é validada no banco ao salvar. */}
+                      {/* A lista só esconde, como ajuda visual, semanas que já têm reserva no mesmo ano de uso (data inicial) sendo cadastrado.
+                          Semanas com reserva em outro ano continuam aparecendo: é direito flutuante, uma reserva por ano.
+                          A sobreposição real de datas continua validada no banco ao salvar. */}
                       Semana
                       <select
                         className="pa-campo"
@@ -346,7 +367,7 @@ export default function CadastroReservas() {
                         onChange={(event) => setSemanaIdForm(event.target.value)}
                       >
                         <option value="">Selecione...</option>
-                        {semanas.map((semana) => (
+                        {semanasDisponiveisForm.map((semana) => (
                           <option key={semana.id} value={semana.id}>
                             {semana.rotulo} — {semana.temporadaNome}
                           </option>
