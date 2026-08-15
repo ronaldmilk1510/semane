@@ -272,9 +272,6 @@ export default function CadastroReservas() {
     carregarSemanasEReservas(cotaSelecionadaId);
   }
 
-  const semanasComReserva = new Set(reservas.map((item) => item.semanaId));
-  const semanasDisponiveis = semanas.filter((item) => !semanasComReserva.has(item.id));
-
   return (
     <div>
       <h2>Reservas</h2>
@@ -311,14 +308,11 @@ export default function CadastroReservas() {
                 </p>
               )}
 
-              {semanas.length > 0 && semanasDisponiveis.length === 0 && (
-                <p className="pa-lista-vazia">Todas as semanas desta cota já têm reserva cadastrada.</p>
-              )}
-
-              {semanasDisponiveis.length > 0 && (
+              {semanas.length > 0 && (
                 <form onSubmit={salvar} style={{ marginTop: '1.25rem' }}>
                   <div className="pa-editor-campos">
                     <label>
+                      {/* Toda semana fica disponível aqui, mesmo já tendo reserva em outro ano: é direito flutuante, uma reserva por ano. A sobreposição real de datas é validada no banco ao salvar. */}
                       Semana
                       <select
                         className="pa-campo"
@@ -326,7 +320,7 @@ export default function CadastroReservas() {
                         onChange={(event) => setSemanaIdForm(event.target.value)}
                       >
                         <option value="">Selecione...</option>
-                        {semanasDisponiveis.map((semana) => (
+                        {semanas.map((semana) => (
                           <option key={semana.id} value={semana.id}>
                             {semana.rotulo} — {semana.temporadaNome}
                           </option>
