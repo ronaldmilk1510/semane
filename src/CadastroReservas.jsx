@@ -389,48 +389,50 @@ export default function CadastroReservas() {
                     </label>
 
                     {anoUsoForm && semanasDisponiveisForm.length > 0 && (
-                      <>
-                        <label>
-                          {/* Esconde, como ajuda visual, apenas as semanas que já têm reserva no ano de uso escolhido acima.
-                              Semanas com reserva em outro ano continuam aparecendo: é direito flutuante, uma reserva por ano.
-                              A sobreposição real de datas continua validada no banco ao salvar. */}
-                          Semana
-                          <select
-                            className="pa-campo"
-                            value={semanaIdForm}
-                            onChange={(event) => setSemanaIdForm(event.target.value)}
-                          >
-                            <option value="">Selecione...</option>
-                            {semanasDisponiveisForm.map((semana) => (
-                              <option key={semana.id} value={semana.id}>
-                                {semana.rotulo} — {semana.temporadaNome}
-                              </option>
-                            ))}
-                          </select>
-                        </label>
-
-                        <label>
-                          Data inicial
-                          <input
-                            type="date"
-                            className="pa-campo"
-                            value={dataInicialForm}
-                            onChange={(event) => alterarDataInicial(event.target.value)}
-                          />
-                        </label>
-
-                        <label>
-                          Data final
-                          <input
-                            type="date"
-                            className="pa-campo"
-                            value={dataFinalForm}
-                            onChange={(event) => setDataFinalForm(event.target.value)}
-                          />
-                        </label>
-                      </>
+                      <label>
+                        {/* Esconde, como ajuda visual, apenas as semanas que já têm reserva no ano de uso escolhido acima.
+                            Semanas com reserva em outro ano continuam aparecendo: é direito flutuante, uma reserva por ano.
+                            A sobreposição real de datas continua validada no banco ao salvar. */}
+                        Semana
+                        <select
+                          className="pa-campo"
+                          value={semanaIdForm}
+                          onChange={(event) => setSemanaIdForm(event.target.value)}
+                        >
+                          <option value="">Selecione...</option>
+                          {semanasDisponiveisForm.map((semana) => (
+                            <option key={semana.id} value={semana.id}>
+                              {semana.rotulo} — {semana.temporadaNome}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
                     )}
                   </div>
+
+                  {anoUsoForm && semanasDisponiveisForm.length > 0 && (
+                    <div className="pa-editor-campos">
+                      <label>
+                        Data inicial
+                        <input
+                          type="date"
+                          className="pa-campo"
+                          value={dataInicialForm}
+                          onChange={(event) => alterarDataInicial(event.target.value)}
+                        />
+                      </label>
+
+                      <label>
+                        Data final
+                        <input
+                          type="date"
+                          className="pa-campo"
+                          value={dataFinalForm}
+                          onChange={(event) => setDataFinalForm(event.target.value)}
+                        />
+                      </label>
+                    </div>
+                  )}
 
                   {semanas.length > 0 && anosUsoDisponiveisForm.length === 0 && (
                     <p className="pa-lista-vazia">
@@ -460,7 +462,7 @@ export default function CadastroReservas() {
               {reservas.length > 0 && (
                 <>
                   <label className="pa-filtro-ano" style={{ marginTop: '1.5rem', display: 'inline-block' }}>
-                    Ano
+                    Filtrar por ano
                     <select
                       className="pa-campo"
                       value={anoFiltro}
