@@ -47,6 +47,8 @@ export default function CadastroReservas() {
 
   const [anoFiltro, setAnoFiltro] = useState('');
 
+  const [gradeAnos, setGradeAnos] = useState([]);
+  const [anoUsoForm, setAnoUsoForm] = useState('');
   const [semanaIdForm, setSemanaIdForm] = useState('');
   const [dataInicialForm, setDataInicialForm] = useState('');
   const [dataFinalForm, setDataFinalForm] = useState('');
@@ -90,12 +92,26 @@ export default function CadastroReservas() {
     setCarregandoDados(true);
     setErroDados('');
     setErroForm('');
+    setAnoUsoForm('');
     setSemanaIdForm('');
     setDataInicialForm('');
     setDataFinalForm('');
     setSemanas([]);
     setReservas([]);
+    setGradeAnos([]);
     setAnoFiltro('');
+
+    const cota = cotas.find((item) => item.id === cotaId);
+    if (cota?.empreendimentoId && cota?.blocoId) {
+      const { data: prioridadesData, error: erroPrioridadesAnos } = await supabase
+        .from('prioridades_do_ano')
+        .select('ano')
+        .eq('empreendimento_id', cota.empreendimentoId)
+        .eq('bloco_id', cota.blocoId);
+      if (!erroPrioridadesAnos) {
+        setGradeAnos(prioridadesData.map((item) => item.ano));
+      }
+    }
 
     const { data: semanasData, error: erroSemanas } = await supabase
       .from('semanas')
@@ -162,16 +178,12 @@ export default function CadastroReservas() {
     setDataFinalForm(valor ? somarDias(valor, 7) : '');
   }
 
-  useEffect(() => {
-    if (!semanaIdForm || !dataInicialForm) return;
-    const anoUso = Number(dataInicialForm.slice(0, 4));
-    const semanaJaTemReservaNoAno = reservas.some(
-      (item) => item.semanaId === semanaIdForm && Number(item.dataInicial.slice(0, 4)) === anoUso
-    );
-    if (semanaJaTemReservaNoAno) {
-      setSemanaIdForm('');
-    }
-  }, [dataInicialForm, reservas, semanaIdForm]);
+  function alterarAnoUso(valor) {
+    setAnoUsoForm(valor);
+    setSemanaIdForm('');
+    setDataInicialForm('');
+    setDataFinalForm('');
+  }
 
   async function salvar(event) {
     event.preventDefault();
@@ -301,11 +313,13 @@ export default function CadastroReservas() {
     carregarSemanasEReservas(cotaSelecionadaId);
   }
 
-  const anoUsoForm = dataInicialForm ? Number(dataInicialForm.slice(0, 4)) : null;
+  const anosUsoDisponiveisForm = Array.from(new Set(gradeAnos.map((ano) => ano + 1))).sort((a, b) => a - b);
   const semanasComReservaNoAnoForm = new Set(
-    anoUsoForm === null
-      ? []
-      : reservas.filter((item) => Number(item.dataInicial.slice(0, 4)) === anoUsoForm).map((item) => item.semanaId)
+    anoUsoForm
+      ? reservas
+          .filter((item) => Number(item.dataInicial.slice(0, 4)) === Number(anoUsoForm))
+          .map((item) => item.semanaId)
+      : []
   );
   const semanasDisponiveisForm = semanas.filter((item) => !semanasComReservaNoAnoForm.has(item.id));
 
@@ -357,52 +371,89 @@ export default function CadastroReservas() {
                 <form onSubmit={salvar} style={{ marginTop: '1.25rem' }}>
                   <div className="pa-editor-campos">
                     <label>
-                      {/* A lista só esconde, como ajuda visual, semanas que já têm reserva no mesmo ano de uso (data inicial) sendo cadastrado.
-                          Semanas com reserva em outro ano continuam aparecendo: é direito flutuante, uma reserva por ano.
-                          A sobreposição real de datas continua validada no banco ao salvar. */}
-                      Semana
+                      {/* Escolher o ano de uso antes filtra a lista de semanas já na primeira exibição, evitando mostrar
+                          todas as semanas sem filtro (o ano só era conhecido depois de a semana já ter sido escolhida). */}
+                      Ano de uso
                       <select
                         className="pa-campo"
-                        value={semanaIdForm}
-                        onChange={(event) => setSemanaIdForm(event.target.value)}
+                        value={anoUsoForm}
+                        onChange={(event) => alterarAnoUso(event.target.value)}
                       >
                         <option value="">Selecione...</option>
-                        {semanasDisponiveisForm.map((semana) => (
-                          <option key={semana.id} value={semana.id}>
-                            {semana.rotulo} — {semana.temporadaNome}
+                        {anosUsoDisponiveisForm.map((ano) => (
+                          <option key={ano} value={ano}>
+                            {ano}
                           </option>
                         ))}
                       </select>
                     </label>
 
-                    <label>
-                      Data inicial
-                      <input
-                        type="date"
-                        className="pa-campo"
-                        value={dataInicialForm}
-                        onChange={(event) => alterarDataInicial(event.target.value)}
-                      />
-                    </label>
+                    {anoUsoForm && semanasDisponiveisForm.length > 0 && (
+                      <>
+                        <label>
+                          {/* Esconde, como ajuda visual, apenas as semanas que já têm reserva no ano de uso escolhido acima.
+                              Semanas com reserva em outro ano continuam aparecendo: é direito flutuante, uma reserva por ano.
+                              A sobreposição real de datas continua validada no banco ao salvar. */}
+                          Semana
+                          <select
+                            className="pa-campo"
+                            value={semanaIdForm}
+                            onChange={(event) => setSemanaIdForm(event.target.value)}
+                          >
+                            <option value="">Selecione...</option>
+                            {semanasDisponiveisForm.map((semana) => (
+                              <option key={semana.id} value={semana.id}>
+                                {semana.rotulo} — {semana.temporadaNome}
+                              </option>
+                            ))}
+                          </select>
+                        </label>
 
-                    <label>
-                      Data final
-                      <input
-                        type="date"
-                        className="pa-campo"
-                        value={dataFinalForm}
-                        onChange={(event) => setDataFinalForm(event.target.value)}
-                      />
-                    </label>
+                        <label>
+                          Data inicial
+                          <input
+                            type="date"
+                            className="pa-campo"
+                            value={dataInicialForm}
+                            onChange={(event) => alterarDataInicial(event.target.value)}
+                          />
+                        </label>
+
+                        <label>
+                          Data final
+                          <input
+                            type="date"
+                            className="pa-campo"
+                            value={dataFinalForm}
+                            onChange={(event) => setDataFinalForm(event.target.value)}
+                          />
+                        </label>
+                      </>
+                    )}
                   </div>
 
-                  {erroForm && <p className="pa-erro">{erroForm}</p>}
+                  {semanas.length > 0 && anosUsoDisponiveisForm.length === 0 && (
+                    <p className="pa-lista-vazia">
+                      Nenhuma grade de prioridades cadastrada para este bloco. Cadastre a prioridade do bloco em
+                      "Prioridades do Ano" antes de criar reservas.
+                    </p>
+                  )}
 
-                  <div className="pa-modal-acoes" style={{ justifyContent: 'flex-start', marginTop: '1rem' }}>
-                    <button type="submit" className="pa-botao" disabled={salvando}>
-                      {salvando ? 'Salvando...' : 'Salvar reserva'}
-                    </button>
-                  </div>
+                  {anoUsoForm && semanasDisponiveisForm.length === 0 && (
+                    <p className="pa-lista-vazia">Todas as semanas desta cota já têm reserva cadastrada para {anoUsoForm}.</p>
+                  )}
+
+                  {anoUsoForm && semanasDisponiveisForm.length > 0 && (
+                    <>
+                      {erroForm && <p className="pa-erro">{erroForm}</p>}
+
+                      <div className="pa-modal-acoes" style={{ justifyContent: 'flex-start', marginTop: '1rem' }}>
+                        <button type="submit" className="pa-botao" disabled={salvando}>
+                          {salvando ? 'Salvando...' : 'Salvar reserva'}
+                        </button>
+                      </div>
+                    </>
+                  )}
                 </form>
               )}
 
