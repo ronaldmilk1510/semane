@@ -88,6 +88,7 @@ export default function PainelAdministrador({ session, onLogout }) {
   function selecionarTela(idTela) {
     setTelaSelecionada(idTela);
     setMenuAberto(false);
+    window.scrollTo(0, 0);
   }
 
   return (
