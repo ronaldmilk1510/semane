@@ -429,3 +429,22 @@
   margin-top: 0;
   min-width: 130px;
 }
+
+/* Listagem de reservas agrupada por ano */
+
+.pa-filtro-ano {
+  font-size: 0.9rem;
+}
+
+.pa-filtro-ano .pa-campo {
+  min-width: 140px;
+}
+
+.pa-grupo-ano-titulo {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--pa-principal);
+  margin: 0 0 0.5rem;
+  padding-bottom: 0.35rem;
+  border-bottom: 2px solid var(--pa-principal);
+}

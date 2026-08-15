@@ -19,6 +19,21 @@ function somarDias(data, dias) {
   return base.toISOString().slice(0, 10);
 }
 
+function agruparReservasPorAno(lista) {
+  const grupos = new Map();
+  lista.forEach((reserva) => {
+    const ano = Number(reserva.dataInicial.slice(0, 4));
+    if (!grupos.has(ano)) grupos.set(ano, []);
+    grupos.get(ano).push(reserva);
+  });
+  return Array.from(grupos.entries())
+    .sort((a, b) => a[0] - b[0])
+    .map(([ano, itens]) => ({
+      ano,
+      itens: itens.slice().sort((a, b) => (a.dataInicial < b.dataInicial ? -1 : a.dataInicial > b.dataInicial ? 1 : 0)),
+    }));
+}
+
 export default function CadastroReservas() {
   const [cotas, setCotas] = useState([]);
   const [carregandoCotas, setCarregandoCotas] = useState(true);
@@ -29,6 +44,8 @@ export default function CadastroReservas() {
   const [reservas, setReservas] = useState([]);
   const [carregandoDados, setCarregandoDados] = useState(false);
   const [erroDados, setErroDados] = useState('');
+
+  const [anoFiltro, setAnoFiltro] = useState('');
 
   const [semanaIdForm, setSemanaIdForm] = useState('');
   const [dataInicialForm, setDataInicialForm] = useState('');
@@ -78,6 +95,7 @@ export default function CadastroReservas() {
     setDataFinalForm('');
     setSemanas([]);
     setReservas([]);
+    setAnoFiltro('');
 
     const { data: semanasData, error: erroSemanas } = await supabase
       .from('semanas')
@@ -272,6 +290,14 @@ export default function CadastroReservas() {
     carregarSemanasEReservas(cotaSelecionadaId);
   }
 
+  const anosDisponiveis = Array.from(new Set(reservas.map((reserva) => Number(reserva.dataInicial.slice(0, 4))))).sort(
+    (a, b) => a - b
+  );
+  const reservasFiltradas = anoFiltro
+    ? reservas.filter((reserva) => Number(reserva.dataInicial.slice(0, 4)) === Number(anoFiltro))
+    : reservas;
+  const gruposPorAno = agruparReservasPorAno(reservasFiltradas);
+
   return (
     <div>
       <h2>Reservas</h2>
@@ -360,36 +386,59 @@ export default function CadastroReservas() {
               )}
 
               {reservas.length > 0 && (
-                <table className="pa-tabela" style={{ marginTop: '1.5rem' }}>
-                  <thead>
-                    <tr>
-                      <th>Semana</th>
-                      <th>Temporada</th>
-                      <th>Data inicial</th>
-                      <th>Data final</th>
-                      <th></th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {reservas.map((reserva) => (
-                      <tr key={reserva.id}>
-                        <td>{reserva.rotulo}</td>
-                        <td>{reserva.temporadaNome}</td>
-                        <td>{formatarDataBr(reserva.dataInicial)}</td>
-                        <td>{formatarDataBr(reserva.dataFinal)}</td>
-                        <td>
-                          <button
-                            type="button"
-                            className="pa-botao-texto pa-botao-texto-aviso"
-                            onClick={() => pedirExclusao(reserva)}
-                          >
-                            Excluir
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                <>
+                  <label className="pa-filtro-ano" style={{ marginTop: '1.5rem', display: 'inline-block' }}>
+                    Ano
+                    <select
+                      className="pa-campo"
+                      value={anoFiltro}
+                      onChange={(event) => setAnoFiltro(event.target.value)}
+                    >
+                      <option value="">Todos</option>
+                      {anosDisponiveis.map((ano) => (
+                        <option key={ano} value={ano}>
+                          {ano}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+
+                  {gruposPorAno.map((grupo) => (
+                    <div key={grupo.ano} style={{ marginTop: '1.25rem' }}>
+                      <h3 className="pa-grupo-ano-titulo">{grupo.ano}</h3>
+                      <table className="pa-tabela">
+                        <thead>
+                          <tr>
+                            <th>Semana</th>
+                            <th>Temporada</th>
+                            <th>Data inicial</th>
+                            <th>Data final</th>
+                            <th></th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {grupo.itens.map((reserva) => (
+                            <tr key={reserva.id}>
+                              <td>{reserva.rotulo}</td>
+                              <td>{reserva.temporadaNome}</td>
+                              <td>{formatarDataBr(reserva.dataInicial)}</td>
+                              <td>{formatarDataBr(reserva.dataFinal)}</td>
+                              <td>
+                                <button
+                                  type="button"
+                                  className="pa-botao-texto pa-botao-texto-aviso"
+                                  onClick={() => pedirExclusao(reserva)}
+                                >
+                                  Excluir
+                                </button>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  ))}
+                </>
               )}
             </>
           )}
