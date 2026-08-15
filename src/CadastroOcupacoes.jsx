@@ -34,6 +34,7 @@ export default function CadastroOcupacoes() {
   const [carregandoReservas, setCarregandoReservas] = useState(true);
   const [erroReservas, setErroReservas] = useState('');
 
+  const [anoUsoForm, setAnoUsoForm] = useState('');
   const [reservaSelecionadaId, setReservaSelecionadaId] = useState('');
   const [trechos, setTrechos] = useState([]);
   const [carregandoTrechos, setCarregandoTrechos] = useState(false);
@@ -164,6 +165,12 @@ export default function CadastroOcupacoes() {
     setTrechos(data);
   }
 
+  function alterarAnoUso(valor) {
+    setAnoUsoForm(valor);
+    setReservaSelecionadaId('');
+    setTrechos([]);
+  }
+
   function selecionarReserva(id) {
     setReservaSelecionadaId(id);
     if (id) {
@@ -172,6 +179,13 @@ export default function CadastroOcupacoes() {
       setTrechos([]);
     }
   }
+
+  const anosDisponiveis = Array.from(new Set(reservas.map((reserva) => Number(reserva.dataInicial.slice(0, 4))))).sort(
+    (a, b) => a - b
+  );
+  const reservasDoAno = anoUsoForm
+    ? reservas.filter((reserva) => Number(reserva.dataInicial.slice(0, 4)) === Number(anoUsoForm))
+    : [];
 
   const reservaSelecionada = reservas.find((item) => item.id === reservaSelecionadaId);
   const locacaoSelecionada = finalidadeForm === 'locação';
@@ -329,21 +343,50 @@ export default function CadastroOcupacoes() {
     <div>
       <h2>Ocupações</h2>
 
-      <label>
-        Reserva
-        <select value={reservaSelecionadaId} onChange={(event) => selecionarReserva(event.target.value)}>
-          <option value="">Selecione...</option>
-          {reservas.map((reserva) => (
-            <option key={reserva.id} value={reserva.id}>
-              {reserva.descricao}
-            </option>
-          ))}
-        </select>
-      </label>
+      <div className="pa-editor-campos">
+        <label>
+          Ano de uso
+          <select
+            className="pa-campo"
+            value={anoUsoForm}
+            onChange={(event) => alterarAnoUso(event.target.value)}
+          >
+            <option value="">Selecione...</option>
+            {anosDisponiveis.map((ano) => (
+              <option key={ano} value={ano}>
+                {ano}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        {anoUsoForm && (
+          <label style={{ flex: '1 1 260px', minWidth: 0 }}>
+            Reserva
+            <select
+              className="pa-campo"
+              style={{ width: '100%', maxWidth: '100%' }}
+              value={reservaSelecionadaId}
+              onChange={(event) => selecionarReserva(event.target.value)}
+            >
+              <option value="">Selecione...</option>
+              {reservasDoAno.map((reserva) => (
+                <option key={reserva.id} value={reserva.id}>
+                  {reserva.descricao}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
+      </div>
 
       {erroReservas && <p className="pa-erro">{erroReservas}</p>}
 
-      {!carregandoReservas && !erroReservas && !reservaSelecionadaId && (
+      {!carregandoReservas && !erroReservas && !anoUsoForm && (
+        <p className="pa-lista-vazia">Escolha o ano de uso para selecionar a reserva.</p>
+      )}
+
+      {!carregandoReservas && !erroReservas && anoUsoForm && !reservaSelecionadaId && (
         <p className="pa-lista-vazia">Escolha uma reserva para ver ou cadastrar suas ocupações.</p>
       )}
 
