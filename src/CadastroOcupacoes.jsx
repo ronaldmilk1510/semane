@@ -13,12 +13,6 @@ function formatarDataBr(data) {
   return data.split('-').reverse().join('/');
 }
 
-function formatarDataCompacta(data) {
-  if (!data) return '';
-  const [, mes, dia] = data.split('-');
-  return `${dia}/${mes}`;
-}
-
 function converterParaNumero(texto) {
   const normalizado = texto.trim().replace(/\./g, '').replace(',', '.');
   return Number(normalizado);
@@ -119,7 +113,6 @@ export default function CadastroOcupacoes() {
         );
         const numeroSemana = numeroPorSemanaId[semana?.id] ?? '';
         const temporadaNome = semana?.temporadas?.nome ?? '';
-        const periodoCompacto = `${formatarDataCompacta(item.data_inicial)} a ${formatarDataCompacta(item.data_final)}`;
         return {
           id: item.id,
           dataInicial: item.data_inicial,
@@ -129,7 +122,7 @@ export default function CadastroOcupacoes() {
           identificacao,
           numeroSemana,
           cotaDescricao: `${empreendimentoNome}, ${identificacao}, ${titulares}`,
-          descricao: `${periodoCompacto}, ${temporadaNome} (${numeroSemana})`,
+          descricao: `${formatarDataBr(item.data_inicial)} a ${formatarDataBr(item.data_final)}, ${temporadaNome} (${numeroSemana})`,
         };
       })
       .sort(
@@ -454,11 +447,6 @@ export default function CadastroOcupacoes() {
 
       {reservaSelecionada && (
         <>
-          <p>
-            Período da reserva: {formatarDataBr(reservaSelecionada.dataInicial)} a{' '}
-            {formatarDataBr(reservaSelecionada.dataFinal)}
-          </p>
-
           {erroTrechos && <p className="pa-erro">{erroTrechos}</p>}
 
           {carregandoTrechos ? (
@@ -504,26 +492,30 @@ export default function CadastroOcupacoes() {
 
               <form onSubmit={salvar} style={{ marginTop: '1.5rem' }}>
                 <div className="pa-editor-campos">
-                  <label>
+                  <label style={{ flex: '1 1 130px', minWidth: 0 }}>
                     Data inicial
                     <input
                       type="date"
                       className="pa-campo"
+                      style={{ width: '100%', maxWidth: '100%' }}
                       value={dataInicialForm}
                       onChange={(event) => setDataInicialForm(event.target.value)}
                     />
                   </label>
 
-                  <label>
+                  <label style={{ flex: '1 1 130px', minWidth: 0 }}>
                     Data final
                     <input
                       type="date"
                       className="pa-campo"
+                      style={{ width: '100%', maxWidth: '100%' }}
                       value={dataFinalForm}
                       onChange={(event) => setDataFinalForm(event.target.value)}
                     />
                   </label>
+                </div>
 
+                <div className="pa-editor-campos" style={{ marginTop: '0.75rem' }}>
                   <label>
                     Finalidade
                     <select
