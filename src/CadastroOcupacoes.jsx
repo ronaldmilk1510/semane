@@ -13,6 +13,12 @@ function formatarDataBr(data) {
   return data.split('-').reverse().join('/');
 }
 
+function formatarDataCompacta(data) {
+  if (!data) return '';
+  const [, mes, dia] = data.split('-');
+  return `${dia}/${mes}`;
+}
+
 function converterParaNumero(texto) {
   const normalizado = texto.trim().replace(/\./g, '').replace(',', '.');
   return Number(normalizado);
@@ -93,12 +99,12 @@ export default function CadastroOcupacoes() {
       return;
     }
 
-    const rotuloPorSemanaId = {};
+    const numeroPorSemanaId = {};
     const contadorPorCota = {};
     semanasData.forEach((semana) => {
       const indice = (contadorPorCota[semana.cota_id] ?? 0) + 1;
       contadorPorCota[semana.cota_id] = indice;
-      rotuloPorSemanaId[semana.id] = `Semana ${indice}`;
+      numeroPorSemanaId[semana.id] = indice;
     });
 
     const listaReservas = reservasData
@@ -110,23 +116,24 @@ export default function CadastroOcupacoes() {
         const titulares = formatarNomes(
           (cota?.titulares_cota || []).map((titular) => titular.proprietarios?.nome).filter(Boolean)
         );
-        const rotuloSemana = rotuloPorSemanaId[semana?.id] ?? '';
+        const numeroSemana = numeroPorSemanaId[semana?.id] ?? '';
         const temporadaNome = semana?.temporadas?.nome ?? '';
+        const periodoCompacto = `${formatarDataCompacta(item.data_inicial)} a ${formatarDataCompacta(item.data_final)}`;
         return {
           id: item.id,
           dataInicial: item.data_inicial,
           dataFinal: item.data_final,
           empreendimentoNome,
           identificacao,
-          rotuloSemana,
-          descricao: `${empreendimentoNome} — ${identificacao} · ${titulares} — ${rotuloSemana} — ${temporadaNome}`,
+          numeroSemana,
+          descricao: `${periodoCompacto}, ${temporadaNome} (${numeroSemana})`,
         };
       })
       .sort(
         (a, b) =>
           a.empreendimentoNome.localeCompare(b.empreendimentoNome, undefined, { numeric: true }) ||
           a.identificacao.localeCompare(b.identificacao, undefined, { numeric: true }) ||
-          a.rotuloSemana.localeCompare(b.rotuloSemana, undefined, { numeric: true })
+          (Number(a.numeroSemana) || 0) - (Number(b.numeroSemana) || 0)
       );
 
     setReservas(listaReservas);
