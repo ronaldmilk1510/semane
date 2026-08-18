@@ -43,6 +43,8 @@ export default function CadastroPagamentos() {
   const [carregandoOcupacoes, setCarregandoOcupacoes] = useState(true);
   const [erroOcupacoes, setErroOcupacoes] = useState('');
 
+  const [anoUsoForm, setAnoUsoForm] = useState('');
+  const [cotaSelecionadaId, setCotaSelecionadaId] = useState('');
   const [ocupacaoSelecionadaId, setOcupacaoSelecionadaId] = useState('');
   const [parcelas, setParcelas] = useState([]);
   const [carregandoParcelas, setCarregandoParcelas] = useState(false);
@@ -67,7 +69,7 @@ export default function CadastroPagamentos() {
     const { data: ocupacoesData, error: erroOcupacoesQuery } = await supabase
       .from('ocupacoes')
       .select(
-        'id, data_inicial, data_final, valor_liquido, reserva_id, reservas!ocupacoes_reserva_id_fkey ( id, semana_id, semanas ( id, cota_id, created_at, cotas ( id, unidades ( identificacao, blocos ( empreendimentos ( nome ) ) ), titulares_cota ( proprietarios ( nome ) ) ) ) )'
+        'id, data_inicial, data_final, valor_liquido, reserva_id, reservas!ocupacoes_reserva_id_fkey ( id, semana_id, semanas ( id, cota_id, created_at, temporada_id, temporadas ( nome ), cotas ( id, unidades ( identificacao, blocos ( empreendimentos ( nome ) ) ), titulares_cota ( proprietarios ( nome ) ) ) ) )'
       )
       .eq('finalidade', 'locação');
 
@@ -95,12 +97,12 @@ export default function CadastroPagamentos() {
       return;
     }
 
-    const rotuloPorSemanaId = {};
+    const numeroPorSemanaId = {};
     const contadorPorCota = {};
     semanasData.forEach((semana) => {
       const indice = (contadorPorCota[semana.cota_id] ?? 0) + 1;
       contadorPorCota[semana.cota_id] = indice;
-      rotuloPorSemanaId[semana.id] = `Semana ${indice}`;
+      numeroPorSemanaId[semana.id] = indice;
     });
 
     const lista = ocupacoesData
@@ -112,26 +114,27 @@ export default function CadastroPagamentos() {
         const titulares = formatarNomes(
           (cota?.titulares_cota || []).map((titular) => titular.proprietarios?.nome).filter(Boolean)
         );
-        const rotuloSemana = rotuloPorSemanaId[semana?.id] ?? '';
+        const numeroSemana = numeroPorSemanaId[semana?.id] ?? '';
+        const temporadaNome = semana?.temporadas?.nome ?? '';
         return {
           id: item.id,
           dataInicial: item.data_inicial,
           dataFinal: item.data_final,
           valorLiquido: item.valor_liquido,
+          cotaId: cota?.id ?? '',
           empreendimentoNome,
           identificacao,
           titulares,
-          rotuloSemana,
-          descricao: `${empreendimentoNome} — ${identificacao} · ${titulares} — ${rotuloSemana} — ${formatarDataBr(
-            item.data_inicial
-          )} a ${formatarDataBr(item.data_final)}`,
+          numeroSemana,
+          cotaDescricao: `${empreendimentoNome}, ${identificacao}, ${titulares}`,
+          descricao: `${formatarDataBr(item.data_inicial)} a ${formatarDataBr(item.data_final)}, ${temporadaNome} (${numeroSemana})`,
         };
       })
       .sort(
         (a, b) =>
           a.empreendimentoNome.localeCompare(b.empreendimentoNome, undefined, { numeric: true }) ||
           a.identificacao.localeCompare(b.identificacao, undefined, { numeric: true }) ||
-          a.rotuloSemana.localeCompare(b.rotuloSemana, undefined, { numeric: true })
+          (Number(a.numeroSemana) || 0) - (Number(b.numeroSemana) || 0)
       );
 
     setOcupacoes(lista);
@@ -173,6 +176,43 @@ export default function CadastroPagamentos() {
       setParcelas([]);
     }
   }
+
+  function alterarAnoUso(valor) {
+    setAnoUsoForm(valor);
+    setCotaSelecionadaId('');
+    selecionarOcupacao('');
+  }
+
+  function selecionarCota(id) {
+    setCotaSelecionadaId(id);
+
+    const ocupacoesDaCota = id
+      ? ocupacoesDoAno.filter((ocupacao) => ocupacao.cotaId === id)
+      : [];
+
+    if (ocupacoesDaCota.length === 1) {
+      selecionarOcupacao(ocupacoesDaCota[0].id);
+    } else {
+      selecionarOcupacao('');
+    }
+  }
+
+  const anosDisponiveis = Array.from(new Set(ocupacoes.map((item) => Number(item.dataInicial.slice(0, 4))))).sort(
+    (a, b) => a - b
+  );
+  const ocupacoesDoAno = anoUsoForm
+    ? ocupacoes.filter((item) => Number(item.dataInicial.slice(0, 4)) === Number(anoUsoForm))
+    : [];
+
+  const cotasDoAno = Array.from(new Map(ocupacoesDoAno.map((item) => [item.cotaId, item])).values()).sort(
+    (a, b) =>
+      a.empreendimentoNome.localeCompare(b.empreendimentoNome, undefined, { numeric: true }) ||
+      a.identificacao.localeCompare(b.identificacao, undefined, { numeric: true })
+  );
+
+  const ocupacoesDaCota = cotaSelecionadaId
+    ? ocupacoesDoAno.filter((item) => item.cotaId === cotaSelecionadaId)
+    : [];
 
   const ocupacaoSelecionada = ocupacoes.find((item) => item.id === ocupacaoSelecionadaId);
 
@@ -270,35 +310,79 @@ export default function CadastroPagamentos() {
     <div>
       <h2>Pagamentos</h2>
 
-      <label>
-        Ocupação
-        <select value={ocupacaoSelecionadaId} onChange={(event) => selecionarOcupacao(event.target.value)}>
-          <option value="">Selecione...</option>
-          {ocupacoes.map((ocupacao) => (
-            <option key={ocupacao.id} value={ocupacao.id}>
-              {ocupacao.descricao}
-            </option>
-          ))}
-        </select>
-      </label>
+      <div className="pa-editor-campos">
+        <label>
+          Ano de uso
+          <select
+            className="pa-campo"
+            value={anoUsoForm}
+            onChange={(event) => alterarAnoUso(event.target.value)}
+          >
+            <option value="">Selecione...</option>
+            {anosDisponiveis.map((ano) => (
+              <option key={ano} value={ano}>
+                {ano}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        {anoUsoForm && (
+          <label style={{ flex: '1 1 260px', minWidth: 0 }}>
+            Cota
+            <select
+              className="pa-campo"
+              style={{ width: '100%', maxWidth: '100%' }}
+              value={cotaSelecionadaId}
+              onChange={(event) => selecionarCota(event.target.value)}
+            >
+              <option value="">Selecione...</option>
+              {cotasDoAno.map((cota) => (
+                <option key={cota.cotaId} value={cota.cotaId}>
+                  {cota.cotaDescricao}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
+
+        {anoUsoForm && cotaSelecionadaId && (
+          <label style={{ flex: '1 1 220px', minWidth: 0 }}>
+            Ocupação
+            <select
+              className="pa-campo"
+              style={{ width: '100%', maxWidth: '100%' }}
+              value={ocupacaoSelecionadaId}
+              onChange={(event) => selecionarOcupacao(event.target.value)}
+            >
+              <option value="">Selecione...</option>
+              {ocupacoesDaCota.map((ocupacao) => (
+                <option key={ocupacao.id} value={ocupacao.id}>
+                  {ocupacao.descricao}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
+      </div>
 
       {erroOcupacoes && <p className="pa-erro">{erroOcupacoes}</p>}
 
-      {!carregandoOcupacoes && !erroOcupacoes && !ocupacaoSelecionadaId && (
+      {!carregandoOcupacoes && !erroOcupacoes && !anoUsoForm && (
+        <p className="pa-lista-vazia">Escolha o ano de uso para selecionar a ocupação.</p>
+      )}
+
+      {!carregandoOcupacoes && !erroOcupacoes && anoUsoForm && !cotaSelecionadaId && (
+        <p className="pa-lista-vazia">Escolha a cota para selecionar a ocupação.</p>
+      )}
+
+      {!carregandoOcupacoes && !erroOcupacoes && cotaSelecionadaId && !ocupacaoSelecionadaId && (
         <p className="pa-lista-vazia">Escolha uma ocupação de locação para ver ou lançar suas parcelas.</p>
       )}
 
       {ocupacaoSelecionada && (
         <>
           <div style={{ marginTop: '1rem' }}>
-            <p>Empreendimento: {ocupacaoSelecionada.empreendimentoNome}</p>
-            <p>Unidade: {ocupacaoSelecionada.identificacao}</p>
-            <p>Titulares: {ocupacaoSelecionada.titulares}</p>
-            <p>Semana: {ocupacaoSelecionada.rotuloSemana}</p>
-            <p>
-              Período: {formatarDataBr(ocupacaoSelecionada.dataInicial)} a{' '}
-              {formatarDataBr(ocupacaoSelecionada.dataFinal)}
-            </p>
             <p>Valor líquido combinado: {formatarMoeda(ocupacaoSelecionada.valorLiquido)}</p>
           </div>
 
