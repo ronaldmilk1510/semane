@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from './supabaseClient';
 import { formatarMoeda } from './utils';
+import CampoValorMonetario from './CampoValorMonetario';
 
 function formatarNomes(nomes) {
   if (nomes.length === 0) return '';
@@ -330,14 +331,7 @@ export default function CadastroDespesas() {
 
                   <label>
                     Valor
-                    <input
-                      type="text"
-                      inputMode="decimal"
-                      className="pa-campo"
-                      placeholder="0,00"
-                      value={valorForm}
-                      onChange={(event) => setValorForm(event.target.value)}
-                    />
+                    <CampoValorMonetario value={valorForm} onChange={setValorForm} />
                   </label>
 
                   <label>

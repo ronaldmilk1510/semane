@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from './supabaseClient';
+import { formatarValorCampo } from './utils';
+import CampoValorMonetario from './CampoValorMonetario';
 
 function formatarNomes(nomes) {
   if (nomes.length === 0) return '';
@@ -10,10 +12,6 @@ function formatarNomes(nomes) {
 function converterParaNumero(texto) {
   const normalizado = texto.trim().replace(/\./g, '').replace(',', '.');
   return Number(normalizado);
-}
-
-function formatarValor(valor) {
-  return String(valor).replace('.', ',');
 }
 
 function novaLinha() {
@@ -99,8 +97,8 @@ export default function CadastroSemanas() {
         chave: crypto.randomUUID(),
         existingId: item.id,
         temporadaId: item.temporada_id,
-        valorMinimo: formatarValor(item.valor_minimo),
-        valorMaximo: formatarValor(item.valor_maximo),
+        valorMinimo: formatarValorCampo(item.valor_minimo),
+        valorMaximo: formatarValorCampo(item.valor_maximo),
       }))
     );
   }
@@ -129,8 +127,8 @@ export default function CadastroSemanas() {
           return {
             ...linha,
             temporadaId: valor,
-            valorMinimo: temporada ? formatarValor(temporada.valor_minimo_padrao) : linha.valorMinimo,
-            valorMaximo: temporada ? formatarValor(temporada.valor_maximo_padrao) : linha.valorMaximo,
+            valorMinimo: temporada ? formatarValorCampo(temporada.valor_minimo_padrao) : linha.valorMinimo,
+            valorMaximo: temporada ? formatarValorCampo(temporada.valor_maximo_padrao) : linha.valorMaximo,
           };
         }
         return { ...linha, [campo]: valor };
@@ -339,23 +337,15 @@ export default function CadastroSemanas() {
                               </select>
                             </td>
                             <td>
-                              <input
-                                type="text"
-                                inputMode="decimal"
-                                className="pa-campo"
-                                placeholder="0,00"
+                              <CampoValorMonetario
                                 value={linha.valorMinimo}
-                                onChange={(event) => atualizarLinha(linha.chave, 'valorMinimo', event.target.value)}
+                                onChange={(valor) => atualizarLinha(linha.chave, 'valorMinimo', valor)}
                               />
                             </td>
                             <td>
-                              <input
-                                type="text"
-                                inputMode="decimal"
-                                className="pa-campo"
-                                placeholder="0,00"
+                              <CampoValorMonetario
                                 value={linha.valorMaximo}
-                                onChange={(event) => atualizarLinha(linha.chave, 'valorMaximo', event.target.value)}
+                                onChange={(valor) => atualizarLinha(linha.chave, 'valorMaximo', valor)}
                               />
                             </td>
                             <td>

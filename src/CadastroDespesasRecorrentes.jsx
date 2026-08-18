@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from './supabaseClient';
-import { formatarMoeda } from './utils';
+import { formatarMoeda, formatarValorCampo } from './utils';
+import CampoValorMonetario from './CampoValorMonetario';
 
 function formatarNomes(nomes) {
   if (nomes.length === 0) return '';
@@ -11,10 +12,6 @@ function formatarNomes(nomes) {
 function converterParaNumero(texto) {
   const normalizado = texto.trim().replace(/\./g, '').replace(',', '.');
   return Number(normalizado);
-}
-
-function formatarValorForm(valor) {
-  return String(valor).replace('.', ',');
 }
 
 const tiposDespesa = [
@@ -144,7 +141,7 @@ export default function CadastroDespesasRecorrentes() {
     setTipoForm(item.tipo);
     setDescricaoForm(item.descricao || '');
     setProprietarioIdForm(item.proprietario_id || '');
-    setValorForm(formatarValorForm(item.valor));
+    setValorForm(formatarValorCampo(item.valor));
     setDiaDoMesForm(String(item.dia_do_mes));
     setAtivoForm(item.ativo);
     setErroForm('');
@@ -397,14 +394,7 @@ export default function CadastroDespesasRecorrentes() {
 
                   <label>
                     Valor
-                    <input
-                      type="text"
-                      inputMode="decimal"
-                      className="pa-campo"
-                      placeholder="0,00"
-                      value={valorForm}
-                      onChange={(event) => setValorForm(event.target.value)}
-                    />
+                    <CampoValorMonetario value={valorForm} onChange={setValorForm} />
                   </label>
 
                   <label>

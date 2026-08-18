@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from './supabaseClient';
-import { formatarMoeda } from './utils';
+import { formatarMoeda, formatarValorCampo } from './utils';
+import CampoValorMonetario from './CampoValorMonetario';
 
 function converterParaNumero(texto) {
   const normalizado = texto.trim().replace(/\./g, '').replace(',', '.');
@@ -67,8 +68,8 @@ export default function CadastroTemporadas() {
     setModoEdicaoId(item.id);
     setEmpreendimentoIdForm(item.empreendimento_id);
     setNomeForm(item.nome);
-    setValorMinimoForm(String(item.valor_minimo_padrao).replace('.', ','));
-    setValorMaximoForm(String(item.valor_maximo_padrao).replace('.', ','));
+    setValorMinimoForm(formatarValorCampo(item.valor_minimo_padrao));
+    setValorMaximoForm(formatarValorCampo(item.valor_maximo_padrao));
     setErroForm('');
     setModalAberto(true);
   }
@@ -247,23 +248,11 @@ export default function CadastroTemporadas() {
               </label>
               <label>
                 Valor mínimo padrão
-                <input
-                  type="text"
-                  inputMode="decimal"
-                  placeholder="0,00"
-                  value={valorMinimoForm}
-                  onChange={(event) => setValorMinimoForm(event.target.value)}
-                />
+                <CampoValorMonetario value={valorMinimoForm} onChange={setValorMinimoForm} />
               </label>
               <label>
                 Valor máximo padrão
-                <input
-                  type="text"
-                  inputMode="decimal"
-                  placeholder="0,00"
-                  value={valorMaximoForm}
-                  onChange={(event) => setValorMaximoForm(event.target.value)}
-                />
+                <CampoValorMonetario value={valorMaximoForm} onChange={setValorMaximoForm} />
               </label>
               {erroForm && <p className="pa-erro">{erroForm}</p>}
               <div className="pa-modal-acoes">

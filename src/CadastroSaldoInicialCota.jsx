@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from './supabaseClient';
+import { formatarValorCampo } from './utils';
+import CampoValorMonetario from './CampoValorMonetario';
 
 function formatarNomes(nomes) {
   if (nomes.length === 0) return '';
@@ -10,10 +12,6 @@ function formatarNomes(nomes) {
 function converterParaNumero(texto) {
   const normalizado = texto.trim().replace(/\./g, '').replace(',', '.');
   return Number(normalizado);
-}
-
-function formatarNumeroParaCampo(valor) {
-  return String(valor).replace('.', ',');
 }
 
 export default function CadastroSaldoInicialCota() {
@@ -57,7 +55,7 @@ export default function CadastroSaldoInicialCota() {
           unidadeIdentificacao: cota.unidades?.identificacao ?? '',
           titulares: formatarNomes(nomes),
           existingId: saldo?.id ?? null,
-          saldoInicial: saldo ? formatarNumeroParaCampo(saldo.saldo_inicial) : '',
+          saldoInicial: saldo ? formatarValorCampo(saldo.saldo_inicial) : '',
           dataCorte: saldo?.data_corte ?? '',
           salvando: false,
           erro: '',
@@ -175,13 +173,9 @@ export default function CadastroSaldoInicialCota() {
                 <td>{linha.unidadeIdentificacao}</td>
                 <td>{linha.titulares || '—'}</td>
                 <td>
-                  <input
-                    type="text"
-                    inputMode="decimal"
-                    className="pa-campo"
-                    placeholder="0,00"
+                  <CampoValorMonetario
                     value={linha.saldoInicial}
-                    onChange={(event) => atualizarCampo(linha.cotaId, 'saldoInicial', event.target.value)}
+                    onChange={(valor) => atualizarCampo(linha.cotaId, 'saldoInicial', valor)}
                   />
                 </td>
                 <td>
