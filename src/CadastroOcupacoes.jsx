@@ -41,6 +41,7 @@ export default function CadastroOcupacoes() {
   const [erroReservas, setErroReservas] = useState('');
 
   const [anoUsoForm, setAnoUsoForm] = useState('');
+  const [cotaSelecionadaId, setCotaSelecionadaId] = useState('');
   const [reservaSelecionadaId, setReservaSelecionadaId] = useState('');
   const [trechos, setTrechos] = useState([]);
   const [carregandoTrechos, setCarregandoTrechos] = useState(false);
@@ -123,10 +124,12 @@ export default function CadastroOcupacoes() {
           id: item.id,
           dataInicial: item.data_inicial,
           dataFinal: item.data_final,
+          cotaId: cota?.id ?? '',
           empreendimentoNome,
           identificacao,
           numeroSemana,
-          descricao: `${empreendimentoNome}, ${identificacao}, ${titulares}, ${periodoCompacto}, ${temporadaNome} (${numeroSemana})`,
+          cotaDescricao: `${empreendimentoNome}, ${identificacao}, ${titulares}`,
+          descricao: `${periodoCompacto}, ${temporadaNome} (${numeroSemana})`,
         };
       })
       .sort(
@@ -174,6 +177,7 @@ export default function CadastroOcupacoes() {
 
   function alterarAnoUso(valor) {
     setAnoUsoForm(valor);
+    setCotaSelecionadaId('');
     setReservaSelecionadaId('');
     setTrechos([]);
   }
@@ -187,11 +191,39 @@ export default function CadastroOcupacoes() {
     }
   }
 
+  function selecionarCota(id) {
+    setCotaSelecionadaId(id);
+
+    const reservasDaCota = id
+      ? reservas.filter(
+          (reserva) =>
+            reserva.cotaId === id && Number(reserva.dataInicial.slice(0, 4)) === Number(anoUsoForm)
+        )
+      : [];
+
+    if (reservasDaCota.length === 1) {
+      selecionarReserva(reservasDaCota[0].id);
+    } else {
+      selecionarReserva('');
+    }
+  }
+
   const anosDisponiveis = Array.from(new Set(reservas.map((reserva) => Number(reserva.dataInicial.slice(0, 4))))).sort(
     (a, b) => a - b
   );
   const reservasDoAno = anoUsoForm
     ? reservas.filter((reserva) => Number(reserva.dataInicial.slice(0, 4)) === Number(anoUsoForm))
+    : [];
+
+  const cotasDoAno = Array.from(new Map(reservasDoAno.map((reserva) => [reserva.cotaId, reserva])).values())
+    .sort(
+      (a, b) =>
+        a.empreendimentoNome.localeCompare(b.empreendimentoNome, undefined, { numeric: true }) ||
+        a.identificacao.localeCompare(b.identificacao, undefined, { numeric: true })
+    );
+
+  const reservasDaCota = cotaSelecionadaId
+    ? reservasDoAno.filter((reserva) => reserva.cotaId === cotaSelecionadaId)
     : [];
 
   const reservaSelecionada = reservas.find((item) => item.id === reservaSelecionadaId);
@@ -369,6 +401,25 @@ export default function CadastroOcupacoes() {
 
         {anoUsoForm && (
           <label style={{ flex: '1 1 260px', minWidth: 0 }}>
+            Cota
+            <select
+              className="pa-campo"
+              style={{ width: '100%', maxWidth: '100%' }}
+              value={cotaSelecionadaId}
+              onChange={(event) => selecionarCota(event.target.value)}
+            >
+              <option value="">Selecione...</option>
+              {cotasDoAno.map((cota) => (
+                <option key={cota.cotaId} value={cota.cotaId}>
+                  {cota.cotaDescricao}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
+
+        {anoUsoForm && cotaSelecionadaId && (
+          <label style={{ flex: '1 1 220px', minWidth: 0 }}>
             Reserva
             <select
               className="pa-campo"
@@ -377,7 +428,7 @@ export default function CadastroOcupacoes() {
               onChange={(event) => selecionarReserva(event.target.value)}
             >
               <option value="">Selecione...</option>
-              {reservasDoAno.map((reserva) => (
+              {reservasDaCota.map((reserva) => (
                 <option key={reserva.id} value={reserva.id}>
                   {reserva.descricao}
                 </option>
@@ -393,7 +444,11 @@ export default function CadastroOcupacoes() {
         <p className="pa-lista-vazia">Escolha o ano de uso para selecionar a reserva.</p>
       )}
 
-      {!carregandoReservas && !erroReservas && anoUsoForm && !reservaSelecionadaId && (
+      {!carregandoReservas && !erroReservas && anoUsoForm && !cotaSelecionadaId && (
+        <p className="pa-lista-vazia">Escolha a cota para selecionar a reserva.</p>
+      )}
+
+      {!carregandoReservas && !erroReservas && cotaSelecionadaId && !reservaSelecionadaId && (
         <p className="pa-lista-vazia">Escolha uma reserva para ver ou cadastrar suas ocupações.</p>
       )}
 
