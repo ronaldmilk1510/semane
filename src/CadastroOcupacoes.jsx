@@ -126,7 +126,7 @@ export default function CadastroOcupacoes() {
           empreendimentoNome,
           identificacao,
           numeroSemana,
-          descricao: `${periodoCompacto}, ${temporadaNome} (${numeroSemana})`,
+          descricao: `${empreendimentoNome}, ${identificacao}, ${titulares}, ${periodoCompacto}, ${temporadaNome} (${numeroSemana})`,
         };
       })
       .sort(
