@@ -14,20 +14,21 @@ function somarDias(data, dias) {
   return base.toISOString().slice(0, 10);
 }
 
-function InfoNumeroSemana() {
+function InfoNumeroSemana({ alinhar = 'direita' }) {
   const [aberto, setAberto] = useState(false);
   return (
-    <span className="pa-ajuda">
+    <span className={`pa-ajuda pa-ajuda-${alinhar}`}>
       <button
         type="button"
-        className="pa-ajuda-gatilho"
+        className="pa-ajuda-icone"
         onClick={() => setAberto((valor) => !valor)}
         aria-expanded={aberto}
+        aria-label="O que significa o número entre parênteses"
       >
-        O que é isso?
+        i
       </button>
       {aberto && (
-        <span className="pa-ajuda-texto">
+        <span className="pa-ajuda-balao" role="tooltip">
           O número entre parênteses ao lado da temporada identifica a semana dentro da cota, usado apenas quando há
           mais de uma semana da mesma temporada.
         </span>
@@ -419,7 +420,7 @@ export default function CadastroReservas() {
                         {/* Esconde, como ajuda visual, apenas as semanas que já têm reserva no ano de uso escolhido acima.
                             Semanas com reserva em outro ano continuam aparecendo: é direito flutuante, uma reserva por ano.
                             A sobreposição real de datas continua validada no banco ao salvar. */}
-                        Semana
+                        Semana <InfoNumeroSemana />
                         <select
                           className="pa-campo"
                           value={semanaIdForm}
@@ -435,8 +436,6 @@ export default function CadastroReservas() {
                       </label>
                     )}
                   </div>
-
-                  {anoUsoForm && semanasDisponiveisForm.length > 0 && <InfoNumeroSemana />}
 
                   {anoUsoForm && semanasDisponiveisForm.length > 0 && (
                     <div className="pa-editor-campos">
@@ -505,8 +504,6 @@ export default function CadastroReservas() {
                     </select>
                   </label>
 
-                  <InfoNumeroSemana />
-
                   {gruposPorAno.map((grupo) => (
                     <div key={grupo.ano} style={{ marginTop: '1.25rem' }}>
                       <h3 className="pa-grupo-ano-titulo">{grupo.ano}</h3>
@@ -515,7 +512,9 @@ export default function CadastroReservas() {
                           <tr>
                             <th>Data inicial</th>
                             <th>Data final</th>
-                            <th>Temporada</th>
+                            <th>
+                              Temporada <InfoNumeroSemana alinhar="esquerda" />
+                            </th>
                             <th></th>
                           </tr>
                         </thead>
