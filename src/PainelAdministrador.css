@@ -264,11 +264,30 @@
   margin-top: 1rem;
 }
 
-.pa-nota {
+.pa-ajuda {
+  display: inline-block;
+  margin-top: 0.35rem;
+}
+
+.pa-ajuda-gatilho {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  color: var(--pa-principal);
+  font-family: inherit;
+  font-size: 0.8rem;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.pa-ajuda-texto {
+  display: block;
+  max-width: 32rem;
+  margin-top: 0.3rem;
   color: var(--pa-texto);
   opacity: 0.65;
   font-size: 0.8rem;
-  margin-top: 0.35rem;
 }
 
 .pa-erro {

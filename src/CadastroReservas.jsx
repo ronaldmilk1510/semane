@@ -14,6 +14,28 @@ function somarDias(data, dias) {
   return base.toISOString().slice(0, 10);
 }
 
+function InfoNumeroSemana() {
+  const [aberto, setAberto] = useState(false);
+  return (
+    <span className="pa-ajuda">
+      <button
+        type="button"
+        className="pa-ajuda-gatilho"
+        onClick={() => setAberto((valor) => !valor)}
+        aria-expanded={aberto}
+      >
+        O que é isso?
+      </button>
+      {aberto && (
+        <span className="pa-ajuda-texto">
+          O número entre parênteses ao lado da temporada identifica a semana dentro da cota, usado apenas quando há
+          mais de uma semana da mesma temporada.
+        </span>
+      )}
+    </span>
+  );
+}
+
 function agruparReservasPorAno(lista) {
   const grupos = new Map();
   lista.forEach((reserva) => {
@@ -414,12 +436,7 @@ export default function CadastroReservas() {
                     )}
                   </div>
 
-                  {anoUsoForm && semanasDisponiveisForm.length > 0 && (
-                    <p className="pa-nota">
-                      O número entre parênteses identifica a semana dentro da cota, usado apenas quando há mais de
-                      uma semana da mesma temporada.
-                    </p>
-                  )}
+                  {anoUsoForm && semanasDisponiveisForm.length > 0 && <InfoNumeroSemana />}
 
                   {anoUsoForm && semanasDisponiveisForm.length > 0 && (
                     <div className="pa-editor-campos">
@@ -488,10 +505,7 @@ export default function CadastroReservas() {
                     </select>
                   </label>
 
-                  <p className="pa-nota">
-                    O número entre parênteses ao lado da temporada identifica a semana dentro da cota, usado apenas
-                    quando há mais de uma semana da mesma temporada.
-                  </p>
+                  <InfoNumeroSemana />
 
                   {gruposPorAno.map((grupo) => (
                     <div key={grupo.ano} style={{ marginTop: '1.25rem' }}>
