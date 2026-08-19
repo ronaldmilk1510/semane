@@ -155,6 +155,7 @@ export default function CadastroReservas() {
             id: item.id,
             semanaId: item.semana_id,
             rotulo: semana?.rotulo ?? '',
+            numero: semana?.numero ?? '',
             temporadaNome: semana?.temporadaNome ?? '',
             dataInicial: item.data_inicial,
             dataFinal: item.data_final,
@@ -414,6 +415,13 @@ export default function CadastroReservas() {
                   </div>
 
                   {anoUsoForm && semanasDisponiveisForm.length > 0 && (
+                    <p className="pa-nota">
+                      O número entre parênteses identifica a semana dentro da cota, usado apenas quando há mais de
+                      uma semana da mesma temporada.
+                    </p>
+                  )}
+
+                  {anoUsoForm && semanasDisponiveisForm.length > 0 && (
                     <div className="pa-editor-campos">
                       <label>
                         Data inicial
@@ -480,26 +488,31 @@ export default function CadastroReservas() {
                     </select>
                   </label>
 
+                  <p className="pa-nota">
+                    O número entre parênteses ao lado da temporada identifica a semana dentro da cota, usado apenas
+                    quando há mais de uma semana da mesma temporada.
+                  </p>
+
                   {gruposPorAno.map((grupo) => (
                     <div key={grupo.ano} style={{ marginTop: '1.25rem' }}>
                       <h3 className="pa-grupo-ano-titulo">{grupo.ano}</h3>
                       <table className="pa-tabela">
                         <thead>
                           <tr>
-                            <th>Semana</th>
-                            <th>Temporada</th>
                             <th>Data inicial</th>
                             <th>Data final</th>
+                            <th>Temporada</th>
                             <th></th>
                           </tr>
                         </thead>
                         <tbody>
                           {grupo.itens.map((reserva) => (
                             <tr key={reserva.id}>
-                              <td>{reserva.rotulo}</td>
-                              <td>{reserva.temporadaNome}</td>
                               <td>{formatarDataBr(reserva.dataInicial)}</td>
                               <td>{formatarDataBr(reserva.dataFinal)}</td>
+                              <td>
+                                {reserva.temporadaNome} ({reserva.numero})
+                              </td>
                               <td>
                                 <button
                                   type="button"

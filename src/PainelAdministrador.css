@@ -264,6 +264,13 @@
   margin-top: 1rem;
 }
 
+.pa-nota {
+  color: var(--pa-texto);
+  opacity: 0.65;
+  font-size: 0.8rem;
+  margin-top: 0.35rem;
+}
+
 .pa-erro {
   color: var(--pa-aviso);
   margin-top: 0.75rem;
