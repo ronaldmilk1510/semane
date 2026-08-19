@@ -1,11 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from './supabaseClient';
-
-function formatarNomes(nomes) {
-  if (nomes.length === 0) return '';
-  if (nomes.length === 1) return nomes[0];
-  return nomes.slice(0, -1).join(', ') + ' e ' + nomes[nomes.length - 1];
-}
+import { formatarNomes, descricaoCota } from './utils';
 
 function novoTitular() {
   return {
@@ -42,7 +37,7 @@ export default function CadastroCotas() {
     const { data, error } = await supabase
       .from('cotas')
       .select(
-        'id, unidade_id, unidades ( identificacao ), titulares_cota ( id, proprietario_id, e_titular_principal, proprietarios ( nome ) )'
+        'id, unidade_id, unidades ( identificacao, blocos ( empreendimentos ( nome ) ) ), titulares_cota ( id, proprietario_id, e_titular_principal, proprietarios ( nome ) )'
       );
     setCarregando(false);
     if (error) {
@@ -55,7 +50,7 @@ export default function CadastroCotas() {
   async function carregarUnidades() {
     const { data, error } = await supabase
       .from('unidades')
-      .select('id, identificacao, blocos ( identificador )');
+      .select('id, identificacao, blocos ( identificador, empreendimentos ( nome ) )');
     if (!error) {
       setUnidades(data);
     }
@@ -275,10 +270,11 @@ export default function CadastroCotas() {
     carregarLista();
   }
 
-  function descricaoCota(item) {
+  function descricaoCotaItem(item) {
+    const empreendimentoNome = item.unidades?.blocos?.empreendimentos?.nome ?? '';
     const identificacao = item.unidades?.identificacao ?? '';
     const nomes = (item.titulares_cota || []).map((titular) => titular.proprietarios?.nome).filter(Boolean);
-    return `${identificacao} · ${formatarNomes(nomes)}`;
+    return descricaoCota(empreendimentoNome, identificacao, formatarNomes(nomes));
   }
 
   const semUnidades = unidades.length === 0;
@@ -312,7 +308,7 @@ export default function CadastroCotas() {
           <tbody>
             {lista.map((item) => (
               <tr key={item.id}>
-                <td>{descricaoCota(item)}</td>
+                <td>{descricaoCotaItem(item)}</td>
                 <td>
                   <button type="button" className="pa-botao-texto" onClick={() => abrirEditar(item)}>
                     Editar
@@ -346,7 +342,7 @@ export default function CadastroCotas() {
                   <option value="">Selecione...</option>
                   {unidades.map((unidade) => (
                     <option key={unidade.id} value={unidade.id}>
-                      {unidade.identificacao} · Bloco {unidade.blocos?.identificador}
+                      {unidade.blocos?.empreendimentos?.nome}, {unidade.identificacao}
                     </option>
                   ))}
                 </select>
@@ -417,7 +413,7 @@ export default function CadastroCotas() {
           <div className="pa-modal" onClick={(event) => event.stopPropagation()}>
             <h3>Excluir cota</h3>
             <p>
-              Excluir a cota {descricaoCota(itemParaExcluir)}? Esta ação não pode ser desfeita.
+              Excluir a cota {descricaoCotaItem(itemParaExcluir)}? Esta ação não pode ser desfeita.
             </p>
             {erroExclusao && <p className="pa-erro">{erroExclusao}</p>}
             <div className="pa-modal-acoes">

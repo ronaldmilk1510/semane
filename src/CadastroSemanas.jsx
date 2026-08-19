@@ -1,13 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from './supabaseClient';
-import { formatarValorCampo } from './utils';
+import { formatarValorCampo, formatarNomes, descricaoCota } from './utils';
 import CampoValorMonetario from './CampoValorMonetario';
-
-function formatarNomes(nomes) {
-  if (nomes.length === 0) return '';
-  if (nomes.length === 1) return nomes[0];
-  return nomes.slice(0, -1).join(', ') + ' e ' + nomes[nomes.length - 1];
-}
 
 function converterParaNumero(texto) {
   const normalizado = texto.trim().replace(/\./g, '').replace(',', '.');
@@ -48,7 +42,7 @@ export default function CadastroSemanas() {
     const { data, error } = await supabase
       .from('cotas')
       .select(
-        'id, unidade_id, unidades ( identificacao, bloco_id, blocos ( empreendimento_id ) ), titulares_cota ( proprietario_id, proprietarios ( nome ) )'
+        'id, unidade_id, unidades ( identificacao, bloco_id, blocos ( empreendimento_id, empreendimentos ( nome ) ) ), titulares_cota ( proprietario_id, proprietarios ( nome ) )'
       );
     setCarregandoCotas(false);
     if (error) {
@@ -59,9 +53,11 @@ export default function CadastroSemanas() {
       data.map((item) => ({
         id: item.id,
         empreendimentoId: item.unidades?.blocos?.empreendimento_id ?? '',
-        descricao: `${item.unidades?.identificacao ?? ''} · ${formatarNomes(
-          (item.titulares_cota || []).map((titular) => titular.proprietarios?.nome).filter(Boolean)
-        )}`,
+        descricao: descricaoCota(
+          item.unidades?.blocos?.empreendimentos?.nome ?? '',
+          item.unidades?.identificacao ?? '',
+          formatarNomes((item.titulares_cota || []).map((titular) => titular.proprietarios?.nome).filter(Boolean))
+        ),
       }))
     );
   }

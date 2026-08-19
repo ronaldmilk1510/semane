@@ -1,13 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from './supabaseClient';
-import { formatarMoeda } from './utils';
+import { formatarMoeda, formatarNomes, descricaoCota } from './utils';
 import CampoValorMonetario from './CampoValorMonetario';
-
-function formatarNomes(nomes) {
-  if (nomes.length === 0) return '';
-  if (nomes.length === 1) return nomes[0];
-  return nomes.slice(0, -1).join(', ') + ' e ' + nomes[nomes.length - 1];
-}
 
 function formatarDataBr(data) {
   if (!data) return '';
@@ -101,7 +95,7 @@ export default function CadastroDespesas() {
         );
         return {
           id: item.id,
-          descricao: `${empreendimentoNome}, ${identificacao}, ${titulares}`,
+          descricao: descricaoCota(empreendimentoNome, identificacao, titulares),
           titulares: (item.titulares_cota || [])
             .filter((titular) => titular.proprietario_id)
             .map((titular) => ({ id: titular.proprietario_id, nome: titular.proprietarios?.nome ?? '' })),

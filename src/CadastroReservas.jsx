@@ -1,11 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from './supabaseClient';
-
-function formatarNomes(nomes) {
-  if (nomes.length === 0) return '';
-  if (nomes.length === 1) return nomes[0];
-  return nomes.slice(0, -1).join(', ') + ' e ' + nomes[nomes.length - 1];
-}
+import { formatarNomes, descricaoCota } from './utils';
 
 function formatarDataBr(data) {
   if (!data) return '';
@@ -65,7 +60,7 @@ export default function CadastroReservas() {
     const { data, error } = await supabase
       .from('cotas')
       .select(
-        'id, unidade_id, unidades ( identificacao, bloco_id, blocos ( identificador, empreendimento_id ) ), titulares_cota ( proprietario_id, proprietarios ( nome ) )'
+        'id, unidade_id, unidades ( identificacao, bloco_id, blocos ( identificador, empreendimento_id, empreendimentos ( nome ) ) ), titulares_cota ( proprietario_id, proprietarios ( nome ) )'
       );
     setCarregandoCotas(false);
     if (error) {
@@ -77,9 +72,11 @@ export default function CadastroReservas() {
         id: item.id,
         blocoId: item.unidades?.bloco_id ?? '',
         empreendimentoId: item.unidades?.blocos?.empreendimento_id ?? '',
-        descricao: `${item.unidades?.identificacao ?? ''} · ${formatarNomes(
-          (item.titulares_cota || []).map((titular) => titular.proprietarios?.nome).filter(Boolean)
-        )}`,
+        descricao: descricaoCota(
+          item.unidades?.blocos?.empreendimentos?.nome ?? '',
+          item.unidades?.identificacao ?? '',
+          formatarNomes((item.titulares_cota || []).map((titular) => titular.proprietarios?.nome).filter(Boolean))
+        ),
       }))
     );
   }
@@ -128,6 +125,7 @@ export default function CadastroReservas() {
     const semanasComRotulo = semanasData.map((item, indice) => ({
       id: item.id,
       rotulo: `Semana ${indice + 1}`,
+      numero: indice + 1,
       temporadaNome: item.temporadas?.nome ?? '',
     }));
 
@@ -313,6 +311,8 @@ export default function CadastroReservas() {
     carregarSemanasEReservas(cotaSelecionadaId);
   }
 
+  const cotaAtual = cotas.find((item) => item.id === cotaSelecionadaId);
+
   const anosUsoDisponiveisForm = Array.from(new Set(gradeAnos.map((ano) => ano + 1))).sort((a, b) => a - b);
   const semanasComReservaNoAnoForm = new Set(
     anoUsoForm
@@ -402,7 +402,7 @@ export default function CadastroReservas() {
                           <option value="">Selecione...</option>
                           {semanasDisponiveisForm.map((semana) => (
                             <option key={semana.id} value={semana.id}>
-                              {semana.rotulo} — {semana.temporadaNome}
+                              {cotaAtual?.descricao}, {semana.temporadaNome} ({semana.numero})
                             </option>
                           ))}
                         </select>

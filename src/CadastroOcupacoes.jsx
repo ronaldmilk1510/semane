@@ -1,13 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from './supabaseClient';
-import { formatarMoeda } from './utils';
+import { formatarMoeda, formatarNomes, descricaoCota } from './utils';
 import CampoValorMonetario from './CampoValorMonetario';
-
-function formatarNomes(nomes) {
-  if (nomes.length === 0) return '';
-  if (nomes.length === 1) return nomes[0];
-  return nomes.slice(0, -1).join(', ') + ' e ' + nomes[nomes.length - 1];
-}
 
 function formatarDataBr(data) {
   if (!data) return '';
@@ -122,7 +116,7 @@ export default function CadastroOcupacoes() {
           empreendimentoNome,
           identificacao,
           numeroSemana,
-          cotaDescricao: `${empreendimentoNome}, ${identificacao}, ${titulares}`,
+          cotaDescricao: descricaoCota(empreendimentoNome, identificacao, titulares),
           descricao: `${formatarDataBr(item.data_inicial)} a ${formatarDataBr(item.data_final)}, ${temporadaNome} (${numeroSemana})`,
         };
       })
