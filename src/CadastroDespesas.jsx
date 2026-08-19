@@ -27,6 +27,21 @@ function hojeISO() {
   return `${ano}-${mes}-${dia}`;
 }
 
+const nomesMeses = [
+  'Janeiro',
+  'Fevereiro',
+  'Março',
+  'Abril',
+  'Maio',
+  'Junho',
+  'Julho',
+  'Agosto',
+  'Setembro',
+  'Outubro',
+  'Novembro',
+  'Dezembro',
+];
+
 const tiposDespesa = [
   { valor: 'condomínio', rotulo: 'Condomínio' },
   { valor: 'parcela de aquisição', rotulo: 'Parcela de aquisição' },
@@ -46,6 +61,7 @@ export default function CadastroDespesas() {
   const [despesas, setDespesas] = useState([]);
   const [carregandoDespesas, setCarregandoDespesas] = useState(false);
   const [erroDespesas, setErroDespesas] = useState('');
+  const [anoFiltro, setAnoFiltro] = useState(String(new Date().getFullYear()));
 
   const [tipoForm, setTipoForm] = useState('');
   const [descricaoForm, setDescricaoForm] = useState('');
@@ -66,7 +82,7 @@ export default function CadastroDespesas() {
     const { data, error } = await supabase
       .from('cotas')
       .select(
-        'id, unidade_id, unidades ( identificacao ), titulares_cota ( proprietario_id, proprietarios ( nome ) )'
+        'id, unidade_id, unidades ( identificacao, blocos ( empreendimentos ( nome ) ) ), titulares_cota ( proprietario_id, proprietarios ( nome ) )'
       );
 
     setCarregandoCotas(false);
@@ -77,15 +93,20 @@ export default function CadastroDespesas() {
     }
 
     setCotas(
-      data.map((item) => ({
-        id: item.id,
-        descricao: `${item.unidades?.identificacao ?? ''} · ${formatarNomes(
+      data.map((item) => {
+        const empreendimentoNome = item.unidades?.blocos?.empreendimentos?.nome ?? '';
+        const identificacao = item.unidades?.identificacao ?? '';
+        const titulares = formatarNomes(
           (item.titulares_cota || []).map((titular) => titular.proprietarios?.nome).filter(Boolean)
-        )}`,
-        titulares: (item.titulares_cota || [])
-          .filter((titular) => titular.proprietario_id)
-          .map((titular) => ({ id: titular.proprietario_id, nome: titular.proprietarios?.nome ?? '' })),
-      }))
+        );
+        return {
+          id: item.id,
+          descricao: `${empreendimentoNome}, ${identificacao}, ${titulares}`,
+          titulares: (item.titulares_cota || [])
+            .filter((titular) => titular.proprietario_id)
+            .map((titular) => ({ id: titular.proprietario_id, nome: titular.proprietarios?.nome ?? '' })),
+        };
+      })
     );
   }
 
@@ -121,6 +142,7 @@ export default function CadastroDespesas() {
 
   function selecionarCota(id) {
     setCotaSelecionadaId(id);
+    setAnoFiltro(String(new Date().getFullYear()));
     if (id) {
       carregarDespesas(id);
     } else {
@@ -138,6 +160,27 @@ export default function CadastroDespesas() {
   const cotaSelecionada = cotas.find((item) => item.id === cotaSelecionadaId);
   const exigeDescricao = tipoForm === 'outra';
   const exigeProprietario = tipoForm === 'retirada de lucro';
+
+  const anosComDespesas = new Set(
+    despesas.map((despesa) => despesa.data?.slice(0, 4)).filter(Boolean)
+  );
+  anosComDespesas.add(String(new Date().getFullYear()));
+  const anosDisponiveis = Array.from(anosComDespesas).sort((a, b) => Number(b) - Number(a));
+
+  const despesasDoAno = despesas
+    .filter((despesa) => despesa.data?.slice(0, 4) === anoFiltro)
+    .sort((a, b) => (a.data < b.data ? 1 : a.data > b.data ? -1 : 0));
+
+  const gruposDespesas = [];
+  despesasDoAno.forEach((despesa) => {
+    const mes = despesa.data.slice(5, 7);
+    const grupoAtual = gruposDespesas[gruposDespesas.length - 1];
+    if (!grupoAtual || grupoAtual.mes !== mes) {
+      gruposDespesas.push({ mes, itens: [despesa] });
+    } else {
+      grupoAtual.itens.push(despesa);
+    }
+  });
 
   async function salvar(event) {
     event.preventDefault();
@@ -246,41 +289,61 @@ export default function CadastroDespesas() {
             <p className="pa-lista-vazia">Carregando despesas...</p>
           ) : (
             <>
-              {despesas.length > 0 && (
-                <table className="pa-tabela" style={{ marginTop: '1rem' }}>
-                  <thead>
-                    <tr>
-                      <th>Tipo</th>
-                      <th>Valor</th>
-                      <th>Data</th>
-                      <th>Descrição</th>
-                      <th></th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {despesas.map((despesa) => (
-                      <tr key={despesa.id}>
-                        <td>{rotuloTipo[despesa.tipo] ?? despesa.tipo}</td>
-                        <td>{formatarMoeda(Number(despesa.valor))}</td>
-                        <td>{formatarDataBr(despesa.data)}</td>
-                        <td>{despesa.descricao || '—'}</td>
-                        <td>
-                          <button
-                            type="button"
-                            className="pa-botao-texto pa-botao-texto-aviso"
-                            onClick={() => pedirExclusao(despesa)}
-                          >
-                            Excluir
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              )}
+              <label>
+                Filtrar por ano
+                <select
+                  className="pa-campo"
+                  value={anoFiltro}
+                  onChange={(event) => setAnoFiltro(event.target.value)}
+                >
+                  {anosDisponiveis.map((ano) => (
+                    <option key={ano} value={ano}>
+                      {ano}
+                    </option>
+                  ))}
+                </select>
+              </label>
 
-              {despesas.length === 0 && (
-                <p className="pa-lista-vazia">Nenhuma despesa cadastrada para esta cota ainda.</p>
+              {gruposDespesas.map((grupo) => (
+                <div key={grupo.mes} style={{ marginTop: '1rem' }}>
+                  <h4 style={{ marginBottom: '0.5rem' }}>
+                    {`${nomesMeses[Number(grupo.mes) - 1]} ${anoFiltro}`}
+                  </h4>
+                  <table className="pa-tabela">
+                    <thead>
+                      <tr>
+                        <th>Tipo</th>
+                        <th>Valor</th>
+                        <th>Data</th>
+                        <th>Descrição</th>
+                        <th></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {grupo.itens.map((despesa) => (
+                        <tr key={despesa.id}>
+                          <td>{rotuloTipo[despesa.tipo] ?? despesa.tipo}</td>
+                          <td>{formatarMoeda(Number(despesa.valor))}</td>
+                          <td>{formatarDataBr(despesa.data)}</td>
+                          <td>{despesa.descricao || '—'}</td>
+                          <td>
+                            <button
+                              type="button"
+                              className="pa-botao-texto pa-botao-texto-aviso"
+                              onClick={() => pedirExclusao(despesa)}
+                            >
+                              Excluir
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ))}
+
+              {despesasDoAno.length === 0 && (
+                <p className="pa-lista-vazia">Nenhuma despesa cadastrada para esta cota em {anoFiltro}.</p>
               )}
 
               <form onSubmit={salvar} style={{ marginTop: '1.5rem' }}>

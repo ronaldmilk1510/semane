@@ -57,7 +57,7 @@ export default function CadastroDespesasRecorrentes() {
     const { data, error } = await supabase
       .from('cotas')
       .select(
-        'id, unidade_id, unidades ( identificacao ), titulares_cota ( proprietario_id, proprietarios ( nome ) )'
+        'id, unidade_id, unidades ( identificacao, blocos ( empreendimentos ( nome ) ) ), titulares_cota ( proprietario_id, proprietarios ( nome ) )'
       );
 
     setCarregandoCotas(false);
@@ -68,15 +68,20 @@ export default function CadastroDespesasRecorrentes() {
     }
 
     setCotas(
-      data.map((item) => ({
-        id: item.id,
-        descricao: `${item.unidades?.identificacao ?? ''} · ${formatarNomes(
+      data.map((item) => {
+        const empreendimentoNome = item.unidades?.blocos?.empreendimentos?.nome ?? '';
+        const identificacao = item.unidades?.identificacao ?? '';
+        const titulares = formatarNomes(
           (item.titulares_cota || []).map((titular) => titular.proprietarios?.nome).filter(Boolean)
-        )}`,
-        titulares: (item.titulares_cota || [])
-          .filter((titular) => titular.proprietario_id)
-          .map((titular) => ({ id: titular.proprietario_id, nome: titular.proprietarios?.nome ?? '' })),
-      }))
+        );
+        return {
+          id: item.id,
+          descricao: `${empreendimentoNome}, ${identificacao}, ${titulares}`,
+          titulares: (item.titulares_cota || [])
+            .filter((titular) => titular.proprietario_id)
+            .map((titular) => ({ id: titular.proprietario_id, nome: titular.proprietarios?.nome ?? '' })),
+        };
+      })
     );
   }
 
