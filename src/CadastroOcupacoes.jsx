@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from './supabaseClient';
-import { formatarMoeda, formatarNomes, descricaoCota } from './utils';
+import { formatarMoeda, formatarNomes, descricaoCota, numerarSemanasPorCota } from './utils';
 import CampoValorMonetario from './CampoValorMonetario';
 
 function formatarDataBr(data) {
@@ -89,13 +89,9 @@ export default function CadastroOcupacoes() {
       return;
     }
 
-    const numeroPorSemanaId = {};
-    const contadorPorCota = {};
-    semanasData.forEach((semana) => {
-      const indice = (contadorPorCota[semana.cota_id] ?? 0) + 1;
-      contadorPorCota[semana.cota_id] = indice;
-      numeroPorSemanaId[semana.id] = indice;
-    });
+    const numeroPorSemanaId = numerarSemanasPorCota(
+      semanasData.map((semana) => ({ id: semana.id, cotaId: semana.cota_id, createdAt: semana.created_at }))
+    );
 
     const listaReservas = reservasData
       .map((item) => {

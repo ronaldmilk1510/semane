@@ -23,3 +23,17 @@ export function formatarValorCampo(valor) {
   if (Number.isNaN(numero)) return valor;
   return numero.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
+
+export function numerarSemanasPorCota(semanas) {
+  const numeroPorSemanaId = {};
+  const contadorPorCota = {};
+  semanas
+    .slice()
+    .sort((a, b) => (a.createdAt < b.createdAt ? -1 : a.createdAt > b.createdAt ? 1 : 0))
+    .forEach((semana) => {
+      const indice = (contadorPorCota[semana.cotaId] ?? 0) + 1;
+      contadorPorCota[semana.cotaId] = indice;
+      numeroPorSemanaId[semana.id] = indice;
+    });
+  return numeroPorSemanaId;
+}

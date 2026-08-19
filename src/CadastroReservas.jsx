@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from './supabaseClient';
-import { formatarNomes, descricaoCota } from './utils';
+import { formatarNomes, descricaoCota, numerarSemanasPorCota } from './utils';
 
 function formatarDataBr(data) {
   if (!data) return '';
@@ -122,10 +122,13 @@ export default function CadastroReservas() {
       return;
     }
 
-    const semanasComRotulo = semanasData.map((item, indice) => ({
+    const numeroPorSemanaId = numerarSemanasPorCota(
+      semanasData.map((item) => ({ id: item.id, cotaId, createdAt: item.created_at }))
+    );
+    const semanasComRotulo = semanasData.map((item) => ({
       id: item.id,
-      rotulo: `Semana ${indice + 1}`,
-      numero: indice + 1,
+      rotulo: `Semana ${numeroPorSemanaId[item.id]}`,
+      numero: numeroPorSemanaId[item.id],
       temporadaNome: item.temporadas?.nome ?? '',
     }));
 
