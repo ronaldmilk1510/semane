@@ -3,8 +3,8 @@ import { supabase } from './supabaseClient';
 import './Relatorio.css';
 
 export default function RelatorioDisponibilidade() {
+  const [todasUnidades, setTodasUnidades] = useState([]);
   const [empreendimentos, setEmpreendimentos] = useState([]);
-  const [unidades, setUnidades] = useState([]);
   const [empreendimentoId, setEmpreendimentoId] = useState('');
   const [ano, setAno] = useState(new Date().getFullYear() + 1);
   const [unidadeId, setUnidadeId] = useState('');
@@ -13,53 +13,40 @@ export default function RelatorioDisponibilidade() {
   const [erro, setErro] = useState('');
 
   useEffect(() => {
-    async function carregarEmpreendimentos() {
-      const { data, error } = await supabase.from('empreendimentos').select('id, nome');
-      if (error) {
+    async function carregarFiltros() {
+      const { data: unidadesData, error: unidadesError } = await supabase
+        .from('unidades')
+        .select('id, identificacao, blocos ( empreendimento_id, empreendimentos ( nome ) )');
+      if (unidadesError) {
         setErro('Não foi possível carregar os empreendimentos.');
         return;
       }
-      setEmpreendimentos(data);
-      if (data.length > 0) setEmpreendimentoId(data[0].id);
+      if (unidadesData) setTodasUnidades(unidadesData);
+
+      const { data: empreendimentosData } = await supabase.from('empreendimentos').select('id, nome');
+      if (empreendimentosData) setEmpreendimentos(empreendimentosData);
     }
-    carregarEmpreendimentos();
+    carregarFiltros();
   }, []);
 
-  useEffect(() => {
-    async function carregarUnidades() {
-      if (!empreendimentoId) {
-        setUnidades([]);
-        return;
-      }
-      const { data: blocosData, error: blocosError } = await supabase
-        .from('blocos')
-        .select('id')
-        .eq('empreendimento_id', empreendimentoId);
-      if (blocosError || !blocosData || blocosData.length === 0) {
-        setUnidades([]);
-        return;
-      }
-      const blocoIds = blocosData.map((b) => b.id);
-      const { data: unidadesData, error: unidadesError } = await supabase
-        .from('unidades')
-        .select('id, identificacao')
-        .in('bloco_id', blocoIds);
-      if (unidadesError) {
-        setUnidades([]);
-        return;
-      }
-      setUnidades(unidadesData);
-      setUnidadeId('');
-    }
-    carregarUnidades();
-  }, [empreendimentoId]);
+  function alterarEmpreendimento(valor) {
+    setEmpreendimentoId(valor);
+    setUnidadeId('');
+  }
+
+  const unidadesFiltradas = todasUnidades
+    .filter((un) => !empreendimentoId || un.blocos?.empreendimento_id === empreendimentoId)
+    .map((un) => ({
+      id: un.id,
+      rotulo: empreendimentoId ? un.identificacao : `${un.blocos?.empreendimentos?.nome ?? ''} · ${un.identificacao}`,
+    }));
 
   async function consultar() {
     setCarregando(true);
     setErro('');
     setResultado([]);
     const { data, error } = await supabase.rpc('relatorio_disponibilidade_semanas', {
-      p_empreendimento_id: empreendimentoId,
+      p_empreendimento_id: empreendimentoId || null,
       p_ano: Number(ano),
       p_unidade_id: unidadeId || null,
     });
@@ -77,8 +64,9 @@ export default function RelatorioDisponibilidade() {
 
       <div className="relatorio-filtros">
         <label className="relatorio-campo">
-          <span>Empreendimento</span>
-          <select value={empreendimentoId} onChange={(e) => setEmpreendimentoId(e.target.value)}>
+          <span>Empreendimento (opcional)</span>
+          <select value={empreendimentoId} onChange={(e) => alterarEmpreendimento(e.target.value)}>
+            <option value="">Todos</option>
             {empreendimentos.map((emp) => (
               <option key={emp.id} value={emp.id}>{emp.nome}</option>
             ))}
@@ -99,15 +87,15 @@ export default function RelatorioDisponibilidade() {
           <span>Unidade (opcional)</span>
           <select value={unidadeId} onChange={(e) => setUnidadeId(e.target.value)}>
             <option value="">Todas</option>
-            {unidades.map((un) => (
-              <option key={un.id} value={un.id}>{un.identificacao}</option>
+            {unidadesFiltradas.map((un) => (
+              <option key={un.id} value={un.id}>{un.rotulo}</option>
             ))}
           </select>
         </label>
       </div>
 
       <div className="relatorio-acoes">
-        <button className="relatorio-botao" onClick={consultar} disabled={!empreendimentoId || carregando}>
+        <button className="relatorio-botao" onClick={consultar} disabled={carregando}>
           {carregando ? 'Consultando...' : 'Consultar'}
         </button>
         <button
