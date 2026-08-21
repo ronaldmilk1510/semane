@@ -17,6 +17,7 @@ export default function RelatorioLocacoes() {
   const [corretorId, setCorretorId] = useState('');
   const [dataInicio, setDataInicio] = useState('');
   const [dataFim, setDataFim] = useState('');
+  const [situacao, setSituacao] = useState('');
   const [visao, setVisao] = useState('sintetica');
   const [resultado, setResultado] = useState([]);
   const [carregando, setCarregando] = useState(false);
@@ -57,13 +58,18 @@ export default function RelatorioLocacoes() {
 
     const nomeFuncao = visao === 'sintetica' ? 'relatorio_locacoes_sintetico' : 'relatorio_locacoes_analitico';
 
-    const { data, error } = await supabase.rpc(nomeFuncao, {
+    const parametros = {
       p_unidade_id: unidadeId || null,
       p_corretor_id: corretorId || null,
       p_data_inicio: dataInicio || null,
       p_data_fim: dataFim || null,
       p_empreendimento_id: empreendimentoId || null,
-    });
+    };
+    if (visao === 'analitica') {
+      parametros.p_situacao = situacao || null;
+    }
+
+    const { data, error } = await supabase.rpc(nomeFuncao, parametros);
 
     setCarregando(false);
     if (error) {
@@ -76,6 +82,7 @@ export default function RelatorioLocacoes() {
   function trocarVisao(novaVisao) {
     setVisao(novaVisao);
     setResultado([]);
+    setSituacao('');
   }
 
   return (
@@ -137,6 +144,18 @@ export default function RelatorioLocacoes() {
           <span>Vencimento até</span>
           <input type="date" value={dataFim} onChange={(e) => setDataFim(e.target.value)} />
         </label>
+
+        {visao === 'analitica' && (
+          <label className="relatorio-campo">
+            <span>Situação</span>
+            <select value={situacao} onChange={(e) => setSituacao(e.target.value)}>
+              <option value="">Todos</option>
+              <option value="Pago">Pago</option>
+              <option value="Pendente">Pendente</option>
+              <option value="Em atraso">Em atraso</option>
+            </select>
+          </label>
+        )}
       </div>
 
       <div className="relatorio-acoes">
