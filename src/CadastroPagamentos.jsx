@@ -52,6 +52,7 @@ export default function CadastroPagamentos() {
 
   const [atualizandoParcelaId, setAtualizandoParcelaId] = useState(null);
   const [erroAtualizacaoParcela, setErroAtualizacaoParcela] = useState('');
+  const [edicaoDataPagamento, setEdicaoDataPagamento] = useState({});
 
   const [parcelaParaExcluir, setParcelaParaExcluir] = useState(null);
   const [excluindoParcela, setExcluindoParcela] = useState(false);
@@ -245,7 +246,30 @@ export default function CadastroPagamentos() {
     carregarParcelas(ocupacaoSelecionadaId);
   }
 
+  function alterarEdicaoDataPagamento(parcelaId, valor) {
+    setEdicaoDataPagamento((atual) => ({ ...atual, [parcelaId]: valor }));
+  }
+
+  function confirmarEdicaoDataPagamento(parcelaId, valorDigitado) {
+    const parcela = parcelas.find((item) => item.id === parcelaId);
+    const valorAtual = parcela?.data_pagamento ?? '';
+    if (valorDigitado === valorAtual) {
+      setEdicaoDataPagamento((atual) => {
+        const copia = { ...atual };
+        delete copia[parcelaId];
+        return copia;
+      });
+      return;
+    }
+    atualizarDataPagamento(parcelaId, valorDigitado);
+  }
+
   async function atualizarDataPagamento(parcelaId, novaData) {
+    setEdicaoDataPagamento((atual) => {
+      const copia = { ...atual };
+      delete copia[parcelaId];
+      return copia;
+    });
     setAtualizandoParcelaId(parcelaId);
     setErroAtualizacaoParcela('');
 
@@ -415,9 +439,10 @@ export default function CadastroPagamentos() {
                             <input
                               type="date"
                               className="pa-campo"
-                              value={parcela.data_pagamento ?? ''}
+                              value={edicaoDataPagamento[parcela.id] ?? parcela.data_pagamento ?? ''}
                               disabled={atualizandoEstaLinha}
-                              onChange={(event) => atualizarDataPagamento(parcela.id, event.target.value)}
+                              onChange={(event) => alterarEdicaoDataPagamento(parcela.id, event.target.value)}
+                              onBlur={(event) => confirmarEdicaoDataPagamento(parcela.id, event.target.value)}
                             />
                           </td>
                           <td>{rotuloSituacao[situacao]}</td>
